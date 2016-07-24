@@ -1,0 +1,97 @@
+group = PROJ_GROUP
+version = PROJ_VERSION
+
+apply plugin: 'com.jfrog.bintray'
+apply plugin: 'maven-publish'
+
+task androidJavadocs(type: Javadoc) {
+    source = android.sourceSets.main.java
+}
+
+task androidJavadocsJar(type: Jar) {
+    classifier = 'javadoc'
+    from androidJavadocs.destinationDir
+}
+
+task androidLibJar(type: Jar) {
+    from fileTree(dir: './build/intermediates/classes/release')
+}
+
+task androidSourcesJar(type: Jar) {
+    classifier = 'sources'
+    from android.sourceSets.main.java.srcDirs
+}
+
+artifacts {
+    archives androidSourcesJar
+}
+
+def pomConfig = {
+    licenses {
+        license {
+            name "The Apache Software License, Version 2.0"
+            url "http://www.apache.org/licenses/LICENSE-2.0.txt"
+            distribution "repo"
+        }
+    }
+    developers {
+        developer {
+            id DEVELOPER_ID
+            name DEVELOPER_NAME
+            email DEVELOPER_EMAIL
+        }
+    }
+}
+
+publishing {
+    publications {
+        mavenJava(MavenPublication) {
+            artifactId PROJ_ARTIFACTID
+
+            artifact androidSourcesJar
+            artifact androidJavadocsJar
+            artifact bundleRelease
+
+            pom.withXml {
+                def root = asNode()
+                root.appendNode('description', PROJ_DESCRIPTION)
+                root.children().last() + pomConfig
+            }
+        }
+    }
+}
+
+bintray {
+    //Do not share your username and key.
+    // Config it in ~/.gradle/gradle.properties or local.properties
+    user = BINTRAY_USER
+    key = BINTRAY_KEY
+
+    publications = ['mavenJava'] //When uploading Maven-based publication files
+    // - AND/OR -
+    filesSpec { //When uploading any arbitrary files ('filesSpec' is a standard Gradle CopySpec)
+        from 'arbitrary-files'
+        into 'standalone_files/level1'
+        rename '(.+)\\.(.+)', '$1-suffix.$2'
+    }
+    dryRun = false //Whether to run this as dry-run, without deploying
+    publish = true //If version should be auto published after an upload
+    pkg {
+        repo = 'maven'
+        //     userOrg = 'myorg' //An optional organization name when the repo belongs to one of the user's orgs
+        name = PROJ_NAME
+        desc = 'what a fantastic package indeed!'
+        websiteUrl = PROJ_WEBSITEURL
+        issueTrackerUrl = PROJ_ISSUETRACKERURL
+        vcsUrl = PROJ_VCSURL
+        licenses = ['Apache-2.0']
+        //   labels = ['gear', 'gore', 'gorilla']
+        publicDownloadNumbers = true
+        //attributes= ['a': ['ay1', 'ay2'], 'b': ['bee'], c: 'cee'] //Optional package-level attributes
+        //Optional version descriptor
+        version {
+            name = PROJ_VERSION //Bintray logical version name
+            vcsTag = PROJ_VERSION
+        }
+    }
+}
