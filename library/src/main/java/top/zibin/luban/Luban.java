@@ -119,37 +119,37 @@ public class Luban {
 
         if (scale <= 1 && scale > 0.5625) {
             if (height < 1664) {
-                size = ((width * height) / (1664.0 * 1664.0)) * 150;
-                size = size < 50 ? 50 : size;
+                size = (width * height) / Math.pow(1664, 2) * 150;
+                size = size < 60 ? 60 : size;
             } else if (height >= 1664 && height < 4990) {
                 thumbW = width / 2;
                 thumbH = height / 2;
-                size = ((thumbW * thumbH) / (4990.0 * 4990.0)) * 300;
-                size = size < 50 ? 50 : size;
+                size = (thumbW * thumbH) / Math.pow(2495, 2) * 300;
+                size = size < 60 ? 60 : size;
             } else if (height >= 4990 && height < 10240) {
                 thumbW = width / 4;
                 thumbH = height / 4;
-                size = (thumbW * thumbH) / (10240.0 * 10240.0) * 300;
+                size = (thumbW * thumbH) / Math.pow(2560, 2) * 300;
                 size = size < 100 ? 100 : size;
             } else {
                 int multiple = height / 1280;
                 thumbW = width / multiple;
                 thumbH = height / multiple;
-                size = (long) (((thumbW * thumbH) / Math.pow(1280 * multiple, 2)) * 300);
+                size = (thumbW * thumbH) / Math.pow(2560, 2) * 300;
                 size = size < 100 ? 100 : size;
             }
         } else if (scale <= 0.5625 && scale > 0.5) {
             int multiple = height / 1280;
             thumbW = width / multiple;
             thumbH = height / multiple;
-            size = (long) ((thumbW * thumbH) / Math.pow(1280 * multiple, 2) * 200);
+            size = (thumbW * thumbH) / (1440.0 * 2560.0) * 200;
             size = size < 100 ? 100 : size;
         } else {
-            int multiple = height / 1280;
-            thumbW = (int) (width / (scale * multiple));
-            thumbH = (int) (height / (scale * multiple));
-            size = (long) ((thumbW * thumbH) / Math.pow(1280 * (scale * multiple), 2) * 500);
-            size = size < 150 ? 150 : size;
+            int multiple = (int) Math.ceil(height / (1280.0 / scale));
+            thumbW = width / multiple;
+            thumbH = height / multiple;
+            size = ((thumbW * thumbH) / (1280.0 * (1280 / scale))) * 500;
+            size = size < 100 ? 100 : size;
         }
 
         compress(filePath, thumb, thumbW, thumbH, angle, (long) size);
@@ -342,7 +342,7 @@ public class Luban {
 
         while (stream.toByteArray().length / 1024 > size) {
             stream.reset();
-            options -= 5;
+            options -= 6;
             bitmap.compress(Bitmap.CompressFormat.JPEG, options, stream);
         }
         try {

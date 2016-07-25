@@ -1,15 +1,7 @@
 package top.zibin.luban.example;
 
-import android.annotation.TargetApi;
-import android.content.ContentUris;
-import android.content.Context;
 import android.content.Intent;
-import android.net.Uri;
-import android.os.Build;
 import android.os.Bundle;
-import android.os.Environment;
-import android.provider.DocumentsContract;
-import android.provider.MediaStore;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
@@ -24,8 +16,6 @@ import top.zibin.luban.Luban;
 import top.zibin.luban.OnCompressListener;
 
 public class MainActivity extends AppCompatActivity {
-    private final int CODE = 1;
-    private Uri imgUri;
 
     private TextView fileSize;
     private TextView imageSize;
@@ -43,8 +33,6 @@ public class MainActivity extends AppCompatActivity {
         imageSize = (TextView) findViewById(R.id.image_size);
         thumbFileSize = (TextView) findViewById(R.id.thumb_file_size);
         thumbImageSize = (TextView) findViewById(R.id.thumb_image_size);
-
-        imgUri = Uri.fromFile(Luban.getPhotoCacheDir(getApplicationContext(), getString(R.string.app_name)));
 
         FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
         fab.setOnClickListener(new View.OnClickListener() {
