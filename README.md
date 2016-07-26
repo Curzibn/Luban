@@ -12,7 +12,7 @@ Luban(鲁班)——Android图片压缩工具，仿微信朋友圈压缩策略
 滚动截屏|1080*6433,1.56M|1080*6433,351k|1080*6433,482k
 
 #导入
-    compile 'top.zibin:Luban:1.0.2'
+    compile 'top.zibin:Luban:1.0.3'
     
 #使用
     
