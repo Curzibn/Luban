@@ -29,7 +29,7 @@ public class Luban {
 
     private OnCompressListener compressListener;
     private File mFile;
-    private int gear;
+    private int gear = THIRD_GEAR;
 
     Luban(File cacheDir) {
         mCacheDir = cacheDir;
@@ -104,55 +104,55 @@ public class Luban {
     private void thirdCompress(@NonNull String filePath) {
         String thumb = mCacheDir.getAbsolutePath() + "/" + System.currentTimeMillis();
 
-        double size;
+        double s;
 
-        int angle = getImageSpinAngle(filePath);
-        int width = getImageSize(filePath)[0];
-        int height = getImageSize(filePath)[1];
-        int thumbW = width % 2 == 1 ? width + 1 : width;
-        int thumbH = height % 2 == 1 ? height + 1 : height;
+        int a = getImageSpinAngle(filePath);
+        int i = getImageSize(filePath)[0];
+        int j = getImageSize(filePath)[1];
+        int k = i % 2 == 1 ? i + 1 : i;
+        int l = j % 2 == 1 ? j + 1 : j;
 
-        width = thumbW > thumbH ? thumbH : thumbW;
-        height = thumbW > thumbH ? thumbW : thumbH;
+        i = k > l ? l : k;
+        j = k > l ? k : l;
 
-        double scale = ((double) width / height);
+        double c = ((double) i / j);
 
-        if (scale <= 1 && scale > 0.5625) {
-            if (height < 1664) {
-                size = (width * height) / Math.pow(1664, 2) * 150;
-                size = size < 60 ? 60 : size;
-            } else if (height >= 1664 && height < 4990) {
-                thumbW = width / 2;
-                thumbH = height / 2;
-                size = (thumbW * thumbH) / Math.pow(2495, 2) * 300;
-                size = size < 60 ? 60 : size;
-            } else if (height >= 4990 && height < 10240) {
-                thumbW = width / 4;
-                thumbH = height / 4;
-                size = (thumbW * thumbH) / Math.pow(2560, 2) * 300;
-                size = size < 100 ? 100 : size;
+        if (c <= 1 && c > 0.5625) {
+            if (j < 1664) {
+                s = (i * j) / Math.pow(1664, 2) * 150;
+                s = s < 60 ? 60 : s;
+            } else if (j >= 1664 && j < 4990) {
+                k = i / 2;
+                l = j / 2;
+                s = (k * l) / Math.pow(2495, 2) * 300;
+                s = s < 60 ? 60 : s;
+            } else if (j >= 4990 && j < 10240) {
+                k = i / 4;
+                l = j / 4;
+                s = (k * l) / Math.pow(2560, 2) * 300;
+                s = s < 100 ? 100 : s;
             } else {
-                int multiple = height / 1280;
-                thumbW = width / multiple;
-                thumbH = height / multiple;
-                size = (thumbW * thumbH) / Math.pow(2560, 2) * 300;
-                size = size < 100 ? 100 : size;
+                int multiple = j / 1280;
+                k = i / multiple;
+                l = j / multiple;
+                s = (k * l) / Math.pow(2560, 2) * 300;
+                s = s < 100 ? 100 : s;
             }
-        } else if (scale <= 0.5625 && scale > 0.5) {
-            int multiple = height / 1280;
-            thumbW = width / multiple;
-            thumbH = height / multiple;
-            size = (thumbW * thumbH) / (1440.0 * 2560.0) * 200;
-            size = size < 100 ? 100 : size;
+        } else if (c <= 0.5625 && c > 0.5) {
+            int multiple = j / 1280;
+            k = i / multiple;
+            l = j / multiple;
+            s = (k * l) / (1440.0 * 2560.0) * 200;
+            s = s < 100 ? 100 : s;
         } else {
-            int multiple = (int) Math.ceil(height / (1280.0 / scale));
-            thumbW = width / multiple;
-            thumbH = height / multiple;
-            size = ((thumbW * thumbH) / (1280.0 * (1280 / scale))) * 500;
-            size = size < 100 ? 100 : size;
+            int multiple = (int) Math.ceil(j / (1280.0 / c));
+            k = i / multiple;
+            l = j / multiple;
+            s = ((k * l) / (1280.0 * (1280 / c))) * 500;
+            s = s < 100 ? 100 : s;
         }
 
-        compress(filePath, thumb, thumbW, thumbH, angle, (long) size);
+        compress(filePath, thumb, k, l, a, (long) s);
     }
 
     private void firstCompress(@NonNull File file) {
