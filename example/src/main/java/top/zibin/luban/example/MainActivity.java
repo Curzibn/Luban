@@ -6,7 +6,10 @@ import android.support.design.widget.FloatingActionButton;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.View;
+import android.widget.ImageView;
 import android.widget.TextView;
+
+import com.bumptech.glide.Glide;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -21,6 +24,7 @@ public class MainActivity extends AppCompatActivity {
     private TextView imageSize;
     private TextView thumbFileSize;
     private TextView thumbImageSize;
+    private ImageView image;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -33,6 +37,7 @@ public class MainActivity extends AppCompatActivity {
         imageSize = (TextView) findViewById(R.id.image_size);
         thumbFileSize = (TextView) findViewById(R.id.thumb_file_size);
         thumbImageSize = (TextView) findViewById(R.id.thumb_image_size);
+        image = (ImageView) findViewById(R.id.image);
 
         FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
         fab.setOnClickListener(new View.OnClickListener() {
@@ -67,6 +72,8 @@ public class MainActivity extends AppCompatActivity {
                         .setCompressListener(new OnCompressListener() {
                             @Override
                             public void onSuccess(File file) {
+                                Glide.with(MainActivity.this).load(file).into(image);
+
                                 thumbFileSize.setText(file.length() / 1024 + "k");
                                 thumbImageSize.setText(Luban.get(getApplicationContext()).getImageSize(file.getPath())[0] + " * " + Luban.get(getApplicationContext()).getImageSize(file.getPath())[1]);
                             }
