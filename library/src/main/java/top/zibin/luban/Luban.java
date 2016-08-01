@@ -104,55 +104,55 @@ public class Luban {
     private void thirdCompress(@NonNull String filePath) {
         String thumb = mCacheDir.getAbsolutePath() + "/" + System.currentTimeMillis();
 
-        double s;
+        double scale;
 
-        int a = getImageSpinAngle(filePath);
-        int i = getImageSize(filePath)[0];
-        int j = getImageSize(filePath)[1];
-        int k = i % 2 == 1 ? i + 1 : i;
-        int l = j % 2 == 1 ? j + 1 : j;
+        int angle = getImageSpinAngle(filePath);
+        int width = getImageSize(filePath)[0];
+        int height = getImageSize(filePath)[1];
+        int thumbW = width % 2 == 1 ? width + 1 : width;
+        int thumbH = height % 2 == 1 ? height + 1 : height;
 
-        i = k > l ? l : k;
-        j = k > l ? k : l;
+        width = thumbW > thumbH ? thumbH : thumbW;
+        height = thumbW > thumbH ? thumbW : thumbH;
 
-        double c = ((double) i / j);
+        double c = ((double) width / height);
 
         if (c <= 1 && c > 0.5625) {
-            if (j < 1664) {
-                s = (i * j) / Math.pow(1664, 2) * 150;
-                s = s < 60 ? 60 : s;
-            } else if (j >= 1664 && j < 4990) {
-                k = i / 2;
-                l = j / 2;
-                s = (k * l) / Math.pow(2495, 2) * 300;
-                s = s < 60 ? 60 : s;
-            } else if (j >= 4990 && j < 10240) {
-                k = i / 4;
-                l = j / 4;
-                s = (k * l) / Math.pow(2560, 2) * 300;
-                s = s < 100 ? 100 : s;
+            if (height < 1664) {
+                scale = (width * height) / Math.pow(1664, 2) * 150;
+                scale = scale < 60 ? 60 : scale;
+            } else if (height >= 1664 && height < 4990) {
+                thumbW = width / 2;
+                thumbH = height / 2;
+                scale = (thumbW * thumbH) / Math.pow(2495, 2) * 300;
+                scale = scale < 60 ? 60 : scale;
+            } else if (height >= 4990 && height < 10240) {
+                thumbW = width / 4;
+                thumbH = height / 4;
+                scale = (thumbW * thumbH) / Math.pow(2560, 2) * 300;
+                scale = scale < 100 ? 100 : scale;
             } else {
-                int multiple = j / 1280;
-                k = i / multiple;
-                l = j / multiple;
-                s = (k * l) / Math.pow(2560, 2) * 300;
-                s = s < 100 ? 100 : s;
+                int multiple = height / 1280;
+                thumbW = width / multiple;
+                thumbH = height / multiple;
+                scale = (thumbW * thumbH) / Math.pow(2560, 2) * 300;
+                scale = scale < 100 ? 100 : scale;
             }
         } else if (c <= 0.5625 && c > 0.5) {
-            int multiple = j / 1280;
-            k = i / multiple;
-            l = j / multiple;
-            s = (k * l) / (1440.0 * 2560.0) * 200;
-            s = s < 100 ? 100 : s;
+            int multiple = height / 1280;
+            thumbW = width / multiple;
+            thumbH = height / multiple;
+            scale = (thumbW * thumbH) / (1440.0 * 2560.0) * 200;
+            scale = scale < 100 ? 100 : scale;
         } else {
-            int multiple = (int) Math.ceil(j / (1280.0 / c));
-            k = i / multiple;
-            l = j / multiple;
-            s = ((k * l) / (1280.0 * (1280 / c))) * 500;
-            s = s < 100 ? 100 : s;
+            int multiple = (int) Math.ceil(height / (1280.0 / c));
+            thumbW = width / multiple;
+            thumbH = height / multiple;
+            scale = ((thumbW * thumbH) / (1280.0 * (1280 / c))) * 500;
+            scale = scale < 100 ? 100 : scale;
         }
 
-        compress(filePath, thumb, k, l, a, (long) s);
+        compress(filePath, thumb, thumbW, thumbH, angle, (long) scale);
     }
 
     private void firstCompress(@NonNull File file) {
@@ -353,7 +353,7 @@ public class Luban {
 
             if (compressListener != null) compressListener.onSuccess(new File(filePath));
         } catch (Exception e) {
-            e.printStackTrace();
+            if (compressListener != null) compressListener.onError(e);
         }
     }
 }
