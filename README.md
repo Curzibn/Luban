@@ -23,6 +23,8 @@ Luban(鲁班)——Android图片压缩工具，仿微信朋友圈压缩策略
     compile 'top.zibin:Luban:1.0.3'
     
 #使用
+###Listener方式
+因为图片压缩会有 io 耗时操作，所有采用此种方式调用请开启线程调用
     
     Luban.get(this)
         .load(File)                     //传人要压缩的图片
