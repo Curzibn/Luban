@@ -132,14 +132,14 @@ public class Luban {
                 scale = (thumbW * thumbH) / Math.pow(2560, 2) * 300;
                 scale = scale < 100 ? 100 : scale;
             } else {
-                int multiple = height / 1280;
+                int multiple = height / 1280 == 0 ? 1 : height / 1280;
                 thumbW = width / multiple;
                 thumbH = height / multiple;
                 scale = (thumbW * thumbH) / Math.pow(2560, 2) * 300;
                 scale = scale < 100 ? 100 : scale;
             }
         } else if (c <= 0.5625 && c > 0.5) {
-            int multiple = height / 1280;
+            int multiple = height / 1280 == 0 ? 1 : height / 1280;
             thumbW = width / multiple;
             thumbH = height / multiple;
             scale = (thumbW * thumbH) / (1440.0 * 2560.0) * 200;
