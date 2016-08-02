@@ -77,6 +77,11 @@ public class MainActivity extends AppCompatActivity {
                                 thumbFileSize.setText(file.length() / 1024 + "k");
                                 thumbImageSize.setText(Luban.get(getApplicationContext()).getImageSize(file.getPath())[0] + " * " + Luban.get(getApplicationContext()).getImageSize(file.getPath())[1]);
                             }
+
+                            @Override
+                            public void onError(Exception e) {
+                                e.printStackTrace();
+                            }
                         }).launch();
             }
         }
