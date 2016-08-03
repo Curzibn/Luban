@@ -93,7 +93,7 @@ public class MainActivity extends AppCompatActivity {
             if (data != null) {
                 ArrayList<String> photos = data.getStringArrayListExtra(PhotoPicker.KEY_SELECTED_PHOTOS);
 
-                Glide.with(this).load(photos.get(0)).into(image);
+                compressImage(new File(photos.get(0)));
             }
         }
     }
