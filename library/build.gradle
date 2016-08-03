@@ -31,13 +31,9 @@ dependencies {
     compile fileTree(dir: 'libs', include: ['*.jar'])
     testCompile 'junit:junit:4.12'
     compile 'com.android.support:appcompat-v7:24.1.1'
-<<<<<<< HEAD
 
     compile 'io.reactivex:rxjava:1.1.6'
     compile 'io.reactivex:rxandroid:1.1.0'
 }
-=======
-}
 
 apply from: 'bintray.gradle'
->>>>>>> parent of 6eb17df... 解决项目无法运行问题
