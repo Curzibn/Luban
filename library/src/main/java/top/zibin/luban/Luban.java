@@ -13,6 +13,12 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 
+import rx.Observable;
+import rx.android.schedulers.AndroidSchedulers;
+import rx.functions.Action1;
+import rx.functions.Func1;
+import rx.schedulers.Schedulers;
+
 import static top.zibin.luban.Preconditions.checkNotNull;
 
 public class Luban {
@@ -77,6 +83,8 @@ public class Luban {
 
     public Luban launch() {
         checkNotNull(mFile, "the image file cannot be null, please call .load() before this method!");
+
+        if (compressListener != null) compressListener.onStart();
 
         if (gear == Luban.FIRST_GEAR)
             firstCompress(mFile);
@@ -152,7 +160,28 @@ public class Luban {
             scale = scale < 100 ? 100 : scale;
         }
 
-        compress(filePath, thumb, thumbW, thumbH, angle, (long) scale);
+        Observable.just(compress(filePath, thumb, thumbW, thumbH, angle, (long) scale))
+                .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+                .doOnError(new Action1<Throwable>() {
+                    @Override
+                    public void call(Throwable throwable) {
+                        if (compressListener != null) compressListener.onError(throwable);
+                    }
+                })
+                .onErrorResumeNext(Observable.<File>empty())
+                .filter(new Func1<File, Boolean>() {
+                    @Override
+                    public Boolean call(File file) {
+                        return file != null;
+                    }
+                })
+                .subscribe(new Action1<File>() {
+                    @Override
+                    public void call(File file) {
+                        if (compressListener != null) compressListener.onSuccess(file);
+                    }
+                });
     }
 
     private void firstCompress(@NonNull File file) {
@@ -192,7 +221,28 @@ public class Luban {
             }
         }
 
-        compress(filePath, thumbFilePath, width, height, angle, size);
+        Observable.just(compress(filePath, thumbFilePath, width, height, angle, size))
+                .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+                .doOnError(new Action1<Throwable>() {
+                    @Override
+                    public void call(Throwable throwable) {
+                        if (compressListener != null) compressListener.onError(throwable);
+                    }
+                })
+                .onErrorResumeNext(Observable.<File>empty())
+                .filter(new Func1<File, Boolean>() {
+                    @Override
+                    public Boolean call(File file) {
+                        return file != null;
+                    }
+                })
+                .subscribe(new Action1<File>() {
+                    @Override
+                    public void call(File file) {
+                        if (compressListener != null) compressListener.onSuccess(file);
+                    }
+                });
     }
 
     /**
@@ -297,12 +347,12 @@ public class Luban {
      * @param angle          rotation angle of thumbnail
      * @param size           the file size of image
      */
-    private void compress(String largeImagePath, String thumbFilePath, int width, int height, int angle, long size) {
+    private File compress(String largeImagePath, String thumbFilePath, int width, int height, int angle, long size) {
         Bitmap thbBitmap = compress(largeImagePath, width, height);
 
         thbBitmap = rotatingImage(angle, thbBitmap);
 
-        saveImage(thumbFilePath, thbBitmap, size);
+        return saveImage(thumbFilePath, thbBitmap, size);
     }
 
     /**
@@ -329,12 +379,12 @@ public class Luban {
      * @param bitmap   the image what be save   目标图片
      * @param size     the file size of image   期望大小
      */
-    private void saveImage(String filePath, Bitmap bitmap, long size) {
+    private File saveImage(String filePath, Bitmap bitmap, long size) {
         checkNotNull(bitmap, TAG + "bitmap cannot be null");
 
         File result = new File(filePath.substring(0, filePath.lastIndexOf("/")));
 
-        if (!result.exists() && !result.mkdirs()) return;
+        if (!result.exists() && !result.mkdirs()) return null;
 
         ByteArrayOutputStream stream = new ByteArrayOutputStream();
         int options = 100;
@@ -345,15 +395,16 @@ public class Luban {
             options -= 6;
             bitmap.compress(Bitmap.CompressFormat.JPEG, options, stream);
         }
+
         try {
             FileOutputStream fos = new FileOutputStream(filePath);
             fos.write(stream.toByteArray());
             fos.flush();
             fos.close();
-
-            if (compressListener != null) compressListener.onSuccess(new File(filePath));
-        } catch (Exception e) {
-            if (compressListener != null) compressListener.onError(e);
+        } catch (IOException e) {
+            e.printStackTrace();
         }
+
+        return new File(filePath);
     }
 }

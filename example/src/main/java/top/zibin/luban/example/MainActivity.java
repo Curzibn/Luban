@@ -54,6 +54,33 @@ public class MainActivity extends AppCompatActivity {
         });
     }
 
+    /**
+     * 压缩单张图片
+     */
+    private void compressImage(File file) {
+        Luban.get(this)
+                .load(file)
+                .putGear(Luban.THIRD_GEAR)
+                .setCompressListener(new OnCompressListener() {
+                    @Override
+                    public void onStart() {
+                    }
+
+                    @Override
+                    public void onSuccess(File file) {
+                        Glide.with(MainActivity.this).load(file).into(image);
+
+                        thumbFileSize.setText(file.length() / 1024 + "k");
+                        thumbImageSize.setText(Luban.get(getApplicationContext()).getImageSize(file.getPath())[0] + " * " + Luban.get(getApplicationContext()).getImageSize(file.getPath())[1]);
+                    }
+
+                    @Override
+                    public void onError(Throwable e) {
+
+                    }
+                }).launch();
+    }
+
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
@@ -66,23 +93,7 @@ public class MainActivity extends AppCompatActivity {
                 fileSize.setText(imgFile.length() / 1024 + "k");
                 imageSize.setText(Luban.get(this).getImageSize(imgFile.getPath())[0] + " * " + Luban.get(this).getImageSize(imgFile.getPath())[1]);
 
-                Luban.get(this)
-                        .load(new File(photos.get(0)))
-                        .putGear(Luban.THIRD_GEAR)
-                        .setCompressListener(new OnCompressListener() {
-                            @Override
-                            public void onSuccess(File file) {
-                                Glide.with(MainActivity.this).load(file).into(image);
-
-                                thumbFileSize.setText(file.length() / 1024 + "k");
-                                thumbImageSize.setText(Luban.get(getApplicationContext()).getImageSize(file.getPath())[0] + " * " + Luban.get(getApplicationContext()).getImageSize(file.getPath())[1]);
-                            }
-
-                            @Override
-                            public void onError(Exception e) {
-                                e.printStackTrace();
-                            }
-                        }).launch();
+                compressImage(new File(photos.get(0)));
             }
         }
     }
