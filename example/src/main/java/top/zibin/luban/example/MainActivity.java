@@ -8,6 +8,7 @@ import android.support.v7.widget.Toolbar;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.bumptech.glide.Glide;
 
@@ -57,13 +58,17 @@ public class MainActivity extends AppCompatActivity {
     /**
      * 压缩单张图片
      */
-    private void compressImage(File file) {
+    private void compressImage(final File file) {
         Luban.get(this)
                 .load(file)
                 .putGear(Luban.THIRD_GEAR)
                 .setCompressListener(new OnCompressListener() {
                     @Override
                     public void onStart() {
+                        Toast.makeText(MainActivity.this, "I'm begin", Toast.LENGTH_SHORT).show();
+
+                        fileSize.setText(file.length() / 1024 + "k");
+                        imageSize.setText(Luban.get(MainActivity.this).getImageSize(file.getPath())[0] + " * " + Luban.get(MainActivity.this).getImageSize(file.getPath())[1]);
                     }
 
                     @Override
@@ -76,7 +81,6 @@ public class MainActivity extends AppCompatActivity {
 
                     @Override
                     public void onError(Throwable e) {
-
                     }
                 }).launch();
     }
@@ -89,11 +93,7 @@ public class MainActivity extends AppCompatActivity {
             if (data != null) {
                 ArrayList<String> photos = data.getStringArrayListExtra(PhotoPicker.KEY_SELECTED_PHOTOS);
 
-                File imgFile = new File(photos.get(0));
-                fileSize.setText(imgFile.length() / 1024 + "k");
-                imageSize.setText(Luban.get(this).getImageSize(imgFile.getPath())[0] + " * " + Luban.get(this).getImageSize(imgFile.getPath())[1]);
-
-                compressImage(new File(photos.get(0)));
+                Glide.with(this).load(photos.get(0)).into(image);
             }
         }
     }
