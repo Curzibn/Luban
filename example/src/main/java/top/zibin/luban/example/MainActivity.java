@@ -8,7 +8,6 @@ import android.support.v7.widget.Toolbar;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.bumptech.glide.Glide;
 
@@ -16,6 +15,11 @@ import java.io.File;
 import java.util.ArrayList;
 
 import me.iwf.photopicker.PhotoPicker;
+import rx.Observable;
+import rx.android.schedulers.AndroidSchedulers;
+import rx.functions.Action1;
+import rx.functions.Func1;
+import rx.schedulers.Schedulers;
 import top.zibin.luban.Luban;
 import top.zibin.luban.OnCompressListener;
 
@@ -56,19 +60,15 @@ public class MainActivity extends AppCompatActivity {
     }
 
     /**
-     * 压缩单张图片
+     * 压缩单张图片 Listener 方式
      */
-    private void compressImage(final File file) {
+    private void compressWithLs(File file) {
         Luban.get(this)
                 .load(file)
                 .putGear(Luban.THIRD_GEAR)
                 .setCompressListener(new OnCompressListener() {
                     @Override
                     public void onStart() {
-                        Toast.makeText(MainActivity.this, "I'm begin", Toast.LENGTH_SHORT).show();
-
-                        fileSize.setText(file.length() / 1024 + "k");
-                        imageSize.setText(Luban.get(MainActivity.this).getImageSize(file.getPath())[0] + " * " + Luban.get(MainActivity.this).getImageSize(file.getPath())[1]);
                     }
 
                     @Override
@@ -81,8 +81,42 @@ public class MainActivity extends AppCompatActivity {
 
                     @Override
                     public void onError(Throwable e) {
+
                     }
                 }).launch();
+    }
+
+    /**
+     * 压缩单张图片 RxJava 方式
+     */
+    private void compressWithRx(File file) {
+        Luban.get(this)
+                .load(file)
+                .putGear(Luban.THIRD_GEAR)
+                .asObservable()
+                .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+                .doOnError(new Action1<Throwable>() {
+                    @Override
+                    public void call(Throwable throwable) {
+                        throwable.printStackTrace();
+                    }
+                })
+                .onErrorResumeNext(new Func1<Throwable, Observable<? extends File>>() {
+                    @Override
+                    public Observable<? extends File> call(Throwable throwable) {
+                        return Observable.empty();
+                    }
+                })
+                .subscribe(new Action1<File>() {
+                    @Override
+                    public void call(File file) {
+                        Glide.with(MainActivity.this).load(file).into(image);
+
+                        thumbFileSize.setText(file.length() / 1024 + "k");
+                        thumbImageSize.setText(Luban.get(getApplicationContext()).getImageSize(file.getPath())[0] + " * " + Luban.get(getApplicationContext()).getImageSize(file.getPath())[1]);
+                    }
+                });
     }
 
     @Override
@@ -93,7 +127,11 @@ public class MainActivity extends AppCompatActivity {
             if (data != null) {
                 ArrayList<String> photos = data.getStringArrayListExtra(PhotoPicker.KEY_SELECTED_PHOTOS);
 
-                compressImage(new File(photos.get(0)));
+                File imgFile = new File(photos.get(0));
+                fileSize.setText(imgFile.length() / 1024 + "k");
+                imageSize.setText(Luban.get(this).getImageSize(imgFile.getPath())[0] + " * " + Luban.get(this).getImageSize(imgFile.getPath())[1]);
+
+                compressWithRx(new File(photos.get(0)));
             }
         }
     }

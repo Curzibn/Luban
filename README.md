@@ -12,19 +12,29 @@ Luban(鲁班)——Android图片压缩工具，仿微信朋友圈压缩策略
 滚动截屏|1080*6433,1.56M|1080*6433,351k|1080*6433,482k
 
 #导入
-    compile 'top.zibin:Luban:1.0.3'
+    compile 'top.zibin:Luban:1.0.4'
     
 #使用
 ###Listener方式
-因为图片压缩会有 io 耗时操作，所有采用此种方式调用请开启线程调用
+Luban内部采用io线程进行图片压缩，外部调用只需设置好结果监听即可
     
     Luban.get(this)
         .load(File)                     //传人要压缩的图片
         .putGear(Luban.THIRD_GEAR)      //设定压缩档次，默认三挡
         .setCompressListener(new OnCompressListener() { //设置回调
+        
+            @Override
+            public void onStart() {
+                //TODO 压缩开始前调用，可以在方法内启动 loading UI
+            }
             @Override
             public void onSuccess(File file) {
-                //回调返回压缩后图片
+                //TODO 压缩成功后调用，返回压缩后的图片文件
+            }
+            
+            @Override
+            public void onError(Throwable e) {
+                //TODO 当压缩过去出现问题时调用
             }
         }).launch();    //启动压缩
         
