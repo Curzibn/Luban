@@ -32,6 +32,7 @@ public class Luban {
     private static volatile Luban INSTANCE;
 
     private final File mCacheDir;
+    private File mTargetFile;
 
     private OnCompressListener compressListener;
     private File mFile;
@@ -46,7 +47,7 @@ public class Luban {
      * retrieved media and thumbnails.
      *
      * @param context A context.
-     * @see #getPhotoCacheDir(android.content.Context, String)
+     * @see #getPhotoCacheDir(Context, String)
      */
     public static File getPhotoCacheDir(Context context) {
         return getPhotoCacheDir(context, Luban.DEFAULT_DISK_CACHE_DIR);
@@ -58,7 +59,7 @@ public class Luban {
      *
      * @param context   A context.
      * @param cacheName The name of the subdirectory in which to store the cache.
-     * @see #getPhotoCacheDir(android.content.Context)
+     * @see #getPhotoCacheDir(Context)
      */
     public static File getPhotoCacheDir(Context context, String cacheName) {
         File cacheDir = context.getCacheDir();
@@ -87,17 +88,65 @@ public class Luban {
         if (compressListener != null) compressListener.onStart();
 
         if (gear == Luban.FIRST_GEAR)
-            firstCompress(mFile);
+            Observable.just(firstCompress(mFile))
+                    .subscribeOn(Schedulers.io())
+                    .observeOn(AndroidSchedulers.mainThread())
+                    .doOnError(new Action1<Throwable>() {
+                        @Override
+                        public void call(Throwable throwable) {
+                            if (compressListener != null) compressListener.onError(throwable);
+                        }
+                    })
+                    .onErrorResumeNext(Observable.<File>empty())
+                    .filter(new Func1<File, Boolean>() {
+                        @Override
+                        public Boolean call(File file) {
+                            return file != null;
+                        }
+                    })
+                    .subscribe(new Action1<File>() {
+                        @Override
+                        public void call(File file) {
+                            if (compressListener != null) compressListener.onSuccess(file);
+                        }
+                    });
         else if (gear == Luban.THIRD_GEAR)
-            thirdCompress(mFile.getAbsolutePath());
+            Observable.just(thirdCompress(mFile.getAbsolutePath()))
+                    .subscribeOn(Schedulers.io())
+                    .observeOn(AndroidSchedulers.mainThread())
+                    .doOnError(new Action1<Throwable>() {
+                        @Override
+                        public void call(Throwable throwable) {
+                            if (compressListener != null) compressListener.onError(throwable);
+                        }
+                    })
+                    .onErrorResumeNext(Observable.<File>empty())
+                    .filter(new Func1<File, Boolean>() {
+                        @Override
+                        public Boolean call(File file) {
+                            return file != null;
+                        }
+                    })
+                    .subscribe(new Action1<File>() {
+                        @Override
+                        public void call(File file) {
+                            if (compressListener != null) compressListener.onSuccess(file);
+                        }
+                    });
 
         return this;
     }
 
-    public Luban load(File file) {
+    public Luban from(File file) {
         mFile = file;
         return this;
     }
+
+    public Luban to(File destFile){
+        mTargetFile = destFile;
+        return this;
+    }
+
 
     public Luban setCompressListener(OnCompressListener listener) {
         compressListener = listener;
@@ -109,8 +158,23 @@ public class Luban {
         return this;
     }
 
-    private void thirdCompress(@NonNull String filePath) {
-        String thumb = mCacheDir.getAbsolutePath() + "/" + System.currentTimeMillis();
+    public Observable<File> asObservable() {
+        if (gear == FIRST_GEAR)
+            return Observable.just(firstCompress(mFile));
+        else if (gear == THIRD_GEAR)
+            return Observable.just(thirdCompress(mFile.getAbsolutePath()));
+        else return Observable.empty();
+    }
+
+    private File thirdCompress(@NonNull String filePath) {
+
+        String thumb;
+        if(mTargetFile == null){
+            thumb = mCacheDir.getAbsolutePath() + "/" + System.currentTimeMillis();
+        }else{
+            thumb = mTargetFile.getAbsolutePath() + "/" + System.currentTimeMillis();
+        }
+
 
         double scale;
 
@@ -160,37 +224,26 @@ public class Luban {
             scale = scale < 100 ? 100 : scale;
         }
 
-        Observable.just(compress(filePath, thumb, thumbW, thumbH, angle, (long) scale))
-                .subscribeOn(Schedulers.io())
-                .observeOn(AndroidSchedulers.mainThread())
-                .doOnError(new Action1<Throwable>() {
-                    @Override
-                    public void call(Throwable throwable) {
-                        if (compressListener != null) compressListener.onError(throwable);
-                    }
-                })
-                .onErrorResumeNext(Observable.<File>empty())
-                .filter(new Func1<File, Boolean>() {
-                    @Override
-                    public Boolean call(File file) {
-                        return file != null;
-                    }
-                })
-                .subscribe(new Action1<File>() {
-                    @Override
-                    public void call(File file) {
-                        if (compressListener != null) compressListener.onSuccess(file);
-                    }
-                });
+        return compress(filePath, thumb, thumbW, thumbH, angle, (long) scale);
     }
 
-    private void firstCompress(@NonNull File file) {
+    private File firstCompress(@NonNull File file) {
         int minSize = 60;
         int longSide = 720;
         int shortSide = 1280;
 
         String filePath = file.getAbsolutePath();
-        String thumbFilePath = mCacheDir.getAbsolutePath() + "/" + System.currentTimeMillis();
+
+        String thumbFilePath ;
+        if (mTargetFile == null) {
+            thumbFilePath  = mCacheDir.getAbsolutePath() + "/" + System.currentTimeMillis();
+        }else{
+            thumbFilePath = mTargetFile.getAbsolutePath() + "/" + System.currentTimeMillis();
+        }
+
+
+
+
         long size = 0;
         long maxSize = file.length() / 5;
 
@@ -221,28 +274,7 @@ public class Luban {
             }
         }
 
-        Observable.just(compress(filePath, thumbFilePath, width, height, angle, size))
-                .subscribeOn(Schedulers.io())
-                .observeOn(AndroidSchedulers.mainThread())
-                .doOnError(new Action1<Throwable>() {
-                    @Override
-                    public void call(Throwable throwable) {
-                        if (compressListener != null) compressListener.onError(throwable);
-                    }
-                })
-                .onErrorResumeNext(Observable.<File>empty())
-                .filter(new Func1<File, Boolean>() {
-                    @Override
-                    public Boolean call(File file) {
-                        return file != null;
-                    }
-                })
-                .subscribe(new Action1<File>() {
-                    @Override
-                    public void call(File file) {
-                        if (compressListener != null) compressListener.onSuccess(file);
-                    }
-                });
+        return compress(filePath, thumbFilePath, width, height, angle, size);
     }
 
     /**
