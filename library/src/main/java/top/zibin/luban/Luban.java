@@ -162,7 +162,7 @@ public class Luban {
     private File thirdCompress(@NonNull String filePath) {
         String thumb = mCacheDir.getAbsolutePath() + "/" + System.currentTimeMillis();
 
-        double scale;
+        double size;
 
         int angle = getImageSpinAngle(filePath);
         int width = getImageSize(filePath)[0];
@@ -173,44 +173,44 @@ public class Luban {
         width = thumbW > thumbH ? thumbH : thumbW;
         height = thumbW > thumbH ? thumbW : thumbH;
 
-        double c = ((double) width / height);
+        double scale = ((double) width / height);
 
-        if (c <= 1 && c > 0.5625) {
+        if (scale <= 1 && scale > 0.5625) {
             if (height < 1664) {
-                scale = (width * height) / Math.pow(1664, 2) * 150;
-                scale = scale < 60 ? 60 : scale;
+                size = (width * height) / Math.pow(1664, 2) * 150;
+                size = size < 60 ? 60 : size;
             } else if (height >= 1664 && height < 4990) {
                 thumbW = width / 2;
                 thumbH = height / 2;
-                scale = (thumbW * thumbH) / Math.pow(2495, 2) * 300;
-                scale = scale < 60 ? 60 : scale;
+                size = (thumbW * thumbH) / Math.pow(2495, 2) * 300;
+                size = size < 60 ? 60 : size;
             } else if (height >= 4990 && height < 10240) {
                 thumbW = width / 4;
                 thumbH = height / 4;
-                scale = (thumbW * thumbH) / Math.pow(2560, 2) * 300;
-                scale = scale < 100 ? 100 : scale;
+                size = (thumbW * thumbH) / Math.pow(2560, 2) * 300;
+                size = size < 100 ? 100 : size;
             } else {
                 int multiple = height / 1280 == 0 ? 1 : height / 1280;
                 thumbW = width / multiple;
                 thumbH = height / multiple;
-                scale = (thumbW * thumbH) / Math.pow(2560, 2) * 300;
-                scale = scale < 100 ? 100 : scale;
+                size = (thumbW * thumbH) / Math.pow(2560, 2) * 300;
+                size = size < 100 ? 100 : size;
             }
-        } else if (c <= 0.5625 && c > 0.5) {
+        } else if (scale <= 0.5625 && scale > 0.5) {
             int multiple = height / 1280 == 0 ? 1 : height / 1280;
             thumbW = width / multiple;
             thumbH = height / multiple;
-            scale = (thumbW * thumbH) / (1440.0 * 2560.0) * 200;
-            scale = scale < 100 ? 100 : scale;
+            size = (thumbW * thumbH) / (1440.0 * 2560.0) * 200;
+            size = size < 100 ? 100 : size;
         } else {
-            int multiple = (int) Math.ceil(height / (1280.0 / c));
+            int multiple = (int) Math.ceil(height / (1280.0 / scale));
             thumbW = width / multiple;
             thumbH = height / multiple;
-            scale = ((thumbW * thumbH) / (1280.0 * (1280 / c))) * 500;
-            scale = scale < 100 ? 100 : scale;
+            size = ((thumbW * thumbH) / (1280.0 * (1280 / scale))) * 500;
+            size = size < 100 ? 100 : size;
         }
 
-        return compress(filePath, thumb, thumbW, thumbH, angle, (long) scale);
+        return compress(filePath, thumb, thumbW, thumbH, angle, (long) size);
     }
 
     private File firstCompress(@NonNull File file) {
