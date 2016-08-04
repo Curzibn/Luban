@@ -14,6 +14,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 
 import rx.Observable;
+import rx.Subscriber;
 import rx.android.schedulers.AndroidSchedulers;
 import rx.functions.Action1;
 import rx.functions.Func1;
@@ -82,11 +83,70 @@ public class Luban {
         return INSTANCE;
     }
 
+    public Observable<File> asObservable() {
+        return Observable.create(new Observable.OnSubscribe<File>() {
+            @Override
+            public void call(Subscriber<? super File> subscriber) {
+                try {
+                    if (gear == FIRST_GEAR)
+                        subscriber.onNext(firstCompress(mFile));
+                    else if (gear == THIRD_GEAR)
+                        subscriber.onNext(thirdCompress(mFile.getAbsolutePath()));
+                    else
+                        subscriber.onError(new Exception("不支持的类型"));
+                    subscriber.onCompleted();
+                } catch (Exception e) {
+                    subscriber.onError(e);
+                }
+
+            }
+        });
+    }
+
+
     public Luban launch() {
         checkNotNull(mFile, "the image file cannot be null, please call .load() before this method!");
 
         if (compressListener != null) compressListener.onStart();
 
+        // @formatter:off
+        Observable.just(mFile)
+                .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+                .doOnError(new Action1<Throwable>() {
+                    @Override
+                    public void call(Throwable throwable) {
+                        if (compressListener != null) compressListener.onError(throwable);
+                    }
+                })
+                .onErrorResumeNext(Observable.<File>empty())
+                .map(new Func1<File, File>() {
+                    @Override
+                    public File call(File file) {
+                        Log.e("Luban","开始转换:" + System.currentTimeMillis() + ",mode: " + gear);
+                        if (gear == FIRST_GEAR)
+                            return firstCompress(mFile);
+                        else if (gear == THIRD_GEAR)
+                            return thirdCompress(mFile.getAbsolutePath());
+                        else
+                            return null;
+
+                    }
+                }).filter(new Func1<File, Boolean>() {
+                        @Override
+                        public Boolean call(File file) {
+                               return file != null;
+                        }
+                 }).subscribe(new Action1<File>() {
+                        @Override
+                        public void call(File file) {
+                            Log.e("Luban","结束转换:" + System.currentTimeMillis());
+                            if (compressListener != null) compressListener.onSuccess(file);
+                        }
+                 });
+        // @formatter:on
+
+/*
         if (gear == Luban.FIRST_GEAR)
             Observable.just(firstCompress(mFile))
                     .subscribeOn(Schedulers.io())
@@ -132,7 +192,7 @@ public class Luban {
                         public void call(File file) {
                             if (compressListener != null) compressListener.onSuccess(file);
                         }
-                    });
+                    });*/
 
         return this;
     }
@@ -142,7 +202,7 @@ public class Luban {
         return this;
     }
 
-    public Luban to(File destFile){
+    public Luban to(File destFile) {
         mTargetFile = destFile;
         return this;
     }
@@ -158,20 +218,22 @@ public class Luban {
         return this;
     }
 
-    public Observable<File> asObservable() {
-        if (gear == FIRST_GEAR)
-            return Observable.just(firstCompress(mFile));
-        else if (gear == THIRD_GEAR)
-            return Observable.just(thirdCompress(mFile.getAbsolutePath()));
-        else return Observable.empty();
-    }
+//    public Observable<File> asObservable() {
+//        if (gear == FIRST_GEAR)
+//            return Observable.just(firstCompress(mFile));
+//        else if (gear == THIRD_GEAR)
+//            return Observable.just(thirdCompress(mFile.getAbsolutePath()));
+//        else return Observable.empty();
+//    }
 
-    private File thirdCompress(@NonNull String filePath) {
+    private File thirdCompress(
+            @NonNull
+            String filePath) {
 
         String thumb;
-        if(mTargetFile == null){
+        if (mTargetFile == null) {
             thumb = mCacheDir.getAbsolutePath() + "/" + System.currentTimeMillis();
-        }else{
+        } else {
             thumb = mTargetFile.getAbsolutePath() + "/" + System.currentTimeMillis();
         }
 
@@ -227,21 +289,21 @@ public class Luban {
         return compress(filePath, thumb, thumbW, thumbH, angle, (long) scale);
     }
 
-    private File firstCompress(@NonNull File file) {
+    private File firstCompress(
+            @NonNull
+            File file) {
         int minSize = 60;
         int longSide = 720;
         int shortSide = 1280;
 
         String filePath = file.getAbsolutePath();
 
-        String thumbFilePath ;
+        String thumbFilePath;
         if (mTargetFile == null) {
-            thumbFilePath  = mCacheDir.getAbsolutePath() + "/" + System.currentTimeMillis();
-        }else{
+            thumbFilePath = mCacheDir.getAbsolutePath() + "/" + System.currentTimeMillis();
+        } else {
             thumbFilePath = mTargetFile.getAbsolutePath() + "/" + System.currentTimeMillis();
         }
-
-
 
 
         long size = 0;

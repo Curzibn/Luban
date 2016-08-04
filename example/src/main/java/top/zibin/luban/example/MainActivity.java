@@ -5,6 +5,7 @@ import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.util.Log;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
@@ -86,10 +87,12 @@ public class MainActivity extends AppCompatActivity {
     /**
      * 压缩单张图片 Listener 方式
      */
-    private void compressWithLs(final File file_ori) {
+    private void compressWithLs(final File file_ori,
+                                @GearMode
+                                final int mode) {
         Luban.get(this)
                 .from(file_ori)
-                .putGear(Luban.THIRD_GEAR)
+                .putGear(mode)
                 .setCompressListener(new OnCompressListener() {
                     @Override
                     public void onStart() {
@@ -97,12 +100,7 @@ public class MainActivity extends AppCompatActivity {
 
                     @Override
                     public void onSuccess(File file) {
-                        Glide.with(MainActivity.this).load(file).into(image);
-
-                        originPath.setText(file_ori.getAbsolutePath());
-                        destPath.setText(file.getAbsolutePath());
-                        thumbFileSize.setText(file.length() / 1024 + "k");
-                        thumbImageSize.setText(Luban.get(getApplicationContext()).getImageSize(file.getPath())[0] + " * " + Luban.get(getApplicationContext()).getImageSize(file.getPath())[1]);
+                        showResult(file, mode, file_ori);
                     }
 
                     @Override
@@ -115,8 +113,9 @@ public class MainActivity extends AppCompatActivity {
     /**
      * 压缩单张图片 RxJava 方式
      */
-    private void compressWithRx(final File file_ori,@GearMode
-    final int mode) {
+    private void compressWithRx(final File file_ori,
+                                @GearMode
+                                final int mode) {
         Luban.get(this)
                 .from(file_ori)
                 .to(destFile)
@@ -139,29 +138,35 @@ public class MainActivity extends AppCompatActivity {
                 .subscribe(new Action1<File>() {
                     @Override
                     public void call(File file) {
-                        switch (mode) {
-
-                            case Luban.FIRST_GEAR:
-                                Glide.with(MainActivity.this).load(file).into(image);
-                                originPath.setText(file_ori.getAbsolutePath());
-                                destPath.setText(file.getAbsolutePath());
-                                thumbFileSize.setText(file.length() / 1024 + "k");
-                                thumbImageSize.setText(Luban.get(getApplicationContext()).getImageSize(file.getPath())[0] + " * " + Luban.get(getApplicationContext()).getImageSize(file.getPath())[1]);
-                                tv_mode1.setText("一档");
-                                break;
-                            case Luban.THIRD_GEAR:
-                                Glide.with(MainActivity.this).load(file).into(image2);
-                                destPath2.setText(file.getAbsolutePath());
-                                thumbFileSize2.setText(file.length() / 1024 + "k");
-                                thumbImageSize2.setText(Luban.get(getApplicationContext()).getImageSize(file.getPath())[0] + " * " + Luban.get(getApplicationContext()).getImageSize(file.getPath())[1]);
-                                tv_mode2.setText("三档");
-                                break;
-
-
-                        }
+                        showResult(file, mode, file_ori);
 
                     }
                 });
+    }
+
+    private void showResult(File file,
+                            @GearMode
+                            int mode, File file_ori) {
+        switch (mode) {
+
+            case Luban.FIRST_GEAR:
+                Glide.with(MainActivity.this).load(file).into(image);
+                originPath.setText(file_ori.getAbsolutePath());
+                destPath.setText(file.getAbsolutePath());
+                thumbFileSize.setText(file.length() / 1024 + "k");
+                thumbImageSize.setText(Luban.get(getApplicationContext()).getImageSize(file.getPath())[0] + " * " + Luban.get(getApplicationContext()).getImageSize(file.getPath())[1]);
+                tv_mode1.setText("一档");
+                break;
+            case Luban.THIRD_GEAR:
+                Glide.with(MainActivity.this).load(file).into(image2);
+                destPath2.setText(file.getAbsolutePath());
+                thumbFileSize2.setText(file.length() / 1024 + "k");
+                thumbImageSize2.setText(Luban.get(getApplicationContext()).getImageSize(file.getPath())[0] + " * " + Luban.get(getApplicationContext()).getImageSize(file.getPath())[1]);
+                tv_mode2.setText("三档");
+                break;
+
+
+        }
     }
 
     @Override
@@ -179,6 +184,9 @@ public class MainActivity extends AppCompatActivity {
                 //测试区别
                 compressWithRx(new File(photos.get(0)),Luban.FIRST_GEAR);
                 compressWithRx(new File(photos.get(0)),Luban.THIRD_GEAR);
+
+//                compressWithLs(new File(photos.get(0)), Luban.FIRST_GEAR);
+//                compressWithLs(new File(photos.get(0)), Luban.THIRD_GEAR);
             }
         }
     }
