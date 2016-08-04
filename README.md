@@ -19,63 +19,9 @@ Luban(鲁班)——Android图片压缩工具，仿微信朋友圈压缩策略
 拍照 9.6M(16:9)|4128*2322,4.64M|1032*581,97k|1032*581,74k
 滚动截屏|1080*6433,1.56M|1080*6433,351k|1080*6433,482k
 
-#导入
-    compile 'io.reactivex:rxandroid:1.2.1'
-    compile 'io.reactivex:rxjava:1.1.6'
-    
-    compile 'top.zibin:Luban:1.0.5'
-    
-#使用
-###Listener方式
-Luban内部采用io线程进行图片压缩，外部调用只需设置好结果监听即可
-    
-    Luban.get(this)
-        .load(File)                     //传人要压缩的图片
-        .putGear(Luban.THIRD_GEAR)      //设定压缩档次，默认三挡
-        .setCompressListener(new OnCompressListener() { //设置回调
-        
-            @Override
-            public void onStart() {
-                //TODO 压缩开始前调用，可以在方法内启动 loading UI
-            }
-            @Override
-            public void onSuccess(File file) {
-                //TODO 压缩成功后调用，返回压缩后的图片文件
-            }
-            
-            @Override
-            public void onError(Throwable e) {
-                //TODO 当压缩过去出现问题时调用
-            }
-        }).launch();    //启动压缩
-        
-###RxJava方式
-RxJava 调用方式请自行随意控制线程
-    
-    Luban.get(this)
-            .load(file)
-            .putGear(Luban.THIRD_GEAR)
-            .asObservable()
-            .subscribeOn(Schedulers.io())
-            .observeOn(AndroidSchedulers.mainThread())
-            .doOnError(new Action1<Throwable>() {
-                @Override
-                public void call(Throwable throwable) {
-                    throwable.printStackTrace();
-                }
-            })
-            .onErrorResumeNext(new Func1<Throwable, Observable<? extends File>>() {
-                @Override
-                public Observable<? extends File> call(Throwable throwable) {
-                    return Observable.empty();
-                }
-            })
-            .subscribe(new Action1<File>() {
-                @Override
-                public void call(File file) {
-                    //TODO 压缩成功后调用，返回压缩后的图片文件
-                }
-            });
+#PULL REQEST 修改
+
+因为自己项目没有用到rxjava，所以觉得没必要导入依赖，将线程修改为线程池，使用方法一样。压缩算法没有修改。
 
 #License
 
