@@ -213,7 +213,7 @@ public class Luban {
         return this;
     }
 
-    public Luban putGear(int gear) {
+    public Luban putGear(@GearMode  int gear) {
         this.gear = gear;
         return this;
     }

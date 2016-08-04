@@ -23,6 +23,7 @@ import rx.android.schedulers.AndroidSchedulers;
 import rx.functions.Action1;
 import rx.functions.Func1;
 import rx.schedulers.Schedulers;
+import top.zibin.luban.GearMode;
 import top.zibin.luban.Luban;
 import top.zibin.luban.OnCompressListener;
 
@@ -90,6 +91,7 @@ public class MainActivity extends AppCompatActivity {
     private void compressWithLs(final File file_ori,
                                 @GearMode
                                 final int mode) {
+
         Luban.get(this)
                 .from(file_ori)
                 .putGear(mode)
