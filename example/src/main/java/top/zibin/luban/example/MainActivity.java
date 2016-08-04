@@ -11,10 +11,17 @@ import android.widget.TextView;
 
 import com.bumptech.glide.Glide;
 
+import org.w3c.dom.Text;
+
 import java.io.File;
 import java.util.ArrayList;
 
 import me.iwf.photopicker.PhotoPicker;
+import rx.Observable;
+import rx.android.schedulers.AndroidSchedulers;
+import rx.functions.Action1;
+import rx.functions.Func1;
+import rx.schedulers.Schedulers;
 import top.zibin.luban.Luban;
 import top.zibin.luban.OnCompressListener;
 
@@ -24,7 +31,18 @@ public class MainActivity extends AppCompatActivity {
     private TextView imageSize;
     private TextView thumbFileSize;
     private TextView thumbImageSize;
+    private TextView originPath;
+    private TextView destPath;
+    private TextView destPath2;
     private ImageView image;
+    private File destFile;
+    private File destFile2;
+    private ImageView image2;
+    private TextView thumbFileSize2;
+    private TextView thumbImageSize2;
+
+    private TextView tv_mode1;
+    private TextView tv_mode2;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -35,9 +53,20 @@ public class MainActivity extends AppCompatActivity {
 
         fileSize = (TextView) findViewById(R.id.file_size);
         imageSize = (TextView) findViewById(R.id.image_size);
+
         thumbFileSize = (TextView) findViewById(R.id.thumb_file_size);
         thumbImageSize = (TextView) findViewById(R.id.thumb_image_size);
-        image = (ImageView) findViewById(R.id.image);
+        thumbFileSize2 = (TextView) findViewById(R.id.thumb_file_size2);
+        thumbImageSize2 = (TextView) findViewById(R.id.thumb_image_size2);
+
+        image = (ImageView) findViewById(R.id.image_first);
+        image2 = (ImageView) findViewById(R.id.image_second);
+        originPath = (TextView) findViewById(R.id.tv_ori_path);
+        destPath = (TextView) findViewById(R.id.tv_dest_path);
+        destPath2 = (TextView) findViewById(R.id.tv_dest_path2);
+
+        tv_mode1 = (TextView) findViewById(R.id.gear_mode);
+        tv_mode2 = (TextView) findViewById(R.id.gear_mode2);
 
         FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
         fab.setOnClickListener(new View.OnClickListener() {
@@ -55,11 +84,11 @@ public class MainActivity extends AppCompatActivity {
     }
 
     /**
-     * 压缩单张图片
+     * 压缩单张图片 Listener 方式
      */
-    private void compressImage(File file) {
+    private void compressWithLs(final File file_ori) {
         Luban.get(this)
-                .load(file)
+                .from(file_ori)
                 .putGear(Luban.THIRD_GEAR)
                 .setCompressListener(new OnCompressListener() {
                     @Override
@@ -70,6 +99,8 @@ public class MainActivity extends AppCompatActivity {
                     public void onSuccess(File file) {
                         Glide.with(MainActivity.this).load(file).into(image);
 
+                        originPath.setText(file_ori.getAbsolutePath());
+                        destPath.setText(file.getAbsolutePath());
                         thumbFileSize.setText(file.length() / 1024 + "k");
                         thumbImageSize.setText(Luban.get(getApplicationContext()).getImageSize(file.getPath())[0] + " * " + Luban.get(getApplicationContext()).getImageSize(file.getPath())[1]);
                     }
@@ -79,6 +110,58 @@ public class MainActivity extends AppCompatActivity {
 
                     }
                 }).launch();
+    }
+
+    /**
+     * 压缩单张图片 RxJava 方式
+     */
+    private void compressWithRx(final File file_ori,@GearMode
+    final int mode) {
+        Luban.get(this)
+                .from(file_ori)
+                .to(destFile)
+                .putGear(mode)
+                .asObservable()
+                .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+                .doOnError(new Action1<Throwable>() {
+                    @Override
+                    public void call(Throwable throwable) {
+                        throwable.printStackTrace();
+                    }
+                })
+                .onErrorResumeNext(new Func1<Throwable, Observable<? extends File>>() {
+                    @Override
+                    public Observable<? extends File> call(Throwable throwable) {
+                        return Observable.empty();
+                    }
+                })
+                .subscribe(new Action1<File>() {
+                    @Override
+                    public void call(File file) {
+                        switch (mode) {
+
+                            case Luban.FIRST_GEAR:
+                                Glide.with(MainActivity.this).load(file).into(image);
+                                originPath.setText(file_ori.getAbsolutePath());
+                                destPath.setText(file.getAbsolutePath());
+                                thumbFileSize.setText(file.length() / 1024 + "k");
+                                thumbImageSize.setText(Luban.get(getApplicationContext()).getImageSize(file.getPath())[0] + " * " + Luban.get(getApplicationContext()).getImageSize(file.getPath())[1]);
+                                tv_mode1.setText("一档");
+                                break;
+                            case Luban.THIRD_GEAR:
+                                Glide.with(MainActivity.this).load(file).into(image2);
+                                destPath2.setText(file.getAbsolutePath());
+                                thumbFileSize2.setText(file.length() / 1024 + "k");
+                                thumbImageSize2.setText(Luban.get(getApplicationContext()).getImageSize(file.getPath())[0] + " * " + Luban.get(getApplicationContext()).getImageSize(file.getPath())[1]);
+                                tv_mode2.setText("三档");
+                                break;
+
+
+                        }
+
+                    }
+                });
     }
 
     @Override
@@ -93,7 +176,9 @@ public class MainActivity extends AppCompatActivity {
                 fileSize.setText(imgFile.length() / 1024 + "k");
                 imageSize.setText(Luban.get(this).getImageSize(imgFile.getPath())[0] + " * " + Luban.get(this).getImageSize(imgFile.getPath())[1]);
 
-                compressImage(new File(photos.get(0)));
+                //测试区别
+                compressWithRx(new File(photos.get(0)),Luban.FIRST_GEAR);
+                compressWithRx(new File(photos.get(0)),Luban.THIRD_GEAR);
             }
         }
     }
