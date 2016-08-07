@@ -1,16 +1,15 @@
 # Intro
-Luban(鲁班)——Android图片压缩工具，仿微信朋友圈压缩策略
-Luban is an android image compressing tool. 
+Luban is an image compressing tool for android with efficacy very close to that of WeChat Moments.
 
 # Description
+With mobile development, showing images in an app has become a very frequent task.
+But with the ever increasing resolution of smartphone cameras, image compression has become a rather important concern.
+Although there are already a lot of writings on the internet on the topic, a great number of possible scenarios still have to be though of, like unsuccessful compressions, too small pictures (eg. for profile pictures) or too bad image quality.
 
-目前做app开发总绕不开图片这个元素。但是随着手机拍照分辨率的提升，图片的压缩成为一个很重要的问题。单纯对图片进行裁切，压缩已经有很多文章介绍。但是裁切成多少，压缩成多少却很难控制好，裁切过头图片太小，质量压缩过头则显示效果太差。
+Naturally, the first idea was to see how the WeChat, the app giant manages this task in action. To gather data, 100 images with different resolutions were sent through WeChat Moments, then the compressed images were compared with the original ones. Luban's foundation is the result of this analysis on WeChat's compression method.
+Because the process was analyzed backwards, luban's efficacy is not yet exactly the same as that of WeChat, but the results are already very close to what WeChat Moments' image compression produces - see the concrete comparison below.
 
-于是自然想到app巨头“微信”会是怎么处理，Luban(鲁班)就是通过在微信朋友圈发送近100张不同分辨率图片，对比原图与微信压缩后的图片逆向推算出来的压缩算法。
-
-因为是逆向推算，效果还没法跟微信一模一样，但是已经很接近微信朋友圈压缩后的效果，具体看以下对比！
-
-# Efficacy in comparison to other tools
+# Efficacy with comparison to other tools
 
 Content | Original picture | Luban | Wechat
 ---|---|---|---
