@@ -110,7 +110,7 @@ public class Luban {
                         }
                     });
         else if (gear == Luban.THIRD_GEAR)
-            Observable.just(thirdCompress(mFile.getAbsolutePath()))
+            Observable.just(thirdCompress(mFile))
                     .subscribeOn(Schedulers.io())
                     .observeOn(AndroidSchedulers.mainThread())
                     .doOnError(new Action1<Throwable>() {
@@ -155,14 +155,15 @@ public class Luban {
         if (gear == FIRST_GEAR)
             return Observable.just(firstCompress(mFile));
         else if (gear == THIRD_GEAR)
-            return Observable.just(thirdCompress(mFile.getAbsolutePath()));
+            return Observable.just(thirdCompress(mFile));
         else return Observable.empty();
     }
 
-    private File thirdCompress(@NonNull String filePath) {
+    private File thirdCompress(@NonNull File file) {
         String thumb = mCacheDir.getAbsolutePath() + "/" + System.currentTimeMillis();
 
         double size;
+        String filePath = file.getAbsolutePath();
 
         int angle = getImageSpinAngle(filePath);
         int width = getImageSize(filePath)[0];
@@ -177,6 +178,8 @@ public class Luban {
 
         if (scale <= 1 && scale > 0.5625) {
             if (height < 1664) {
+                if (file.length() / 1024 < 150) return file;
+
                 size = (width * height) / Math.pow(1664, 2) * 150;
                 size = size < 60 ? 60 : size;
             } else if (height >= 1664 && height < 4990) {
@@ -197,6 +200,8 @@ public class Luban {
                 size = size < 100 ? 100 : size;
             }
         } else if (scale <= 0.5625 && scale > 0.5) {
+            if (height < 1280 && file.length() / 1024 < 200) return file;
+
             int multiple = height / 1280 == 0 ? 1 : height / 1280;
             thumbW = width / multiple;
             thumbH = height / multiple;
@@ -397,8 +402,6 @@ public class Luban {
         ByteArrayOutputStream stream = new ByteArrayOutputStream();
         int options = 100;
         bitmap.compress(Bitmap.CompressFormat.JPEG, options, stream);
-
-        int i = (int) (size / stream.toByteArray().length / 1024.0 * 100);
 
         while (stream.toByteArray().length / 1024 > size) {
             stream.reset();
