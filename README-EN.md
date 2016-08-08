@@ -1,4 +1,4 @@
-# Intro
+# Luban
 English | [中文](/README.md)
 <p>
 Luban is an image compressing tool for android with efficacy very close to that of WeChat Moments.
