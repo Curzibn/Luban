@@ -94,5 +94,5 @@ With RxJava, more freedom is left to the programmer on controlling the process.
     limitations under the License.
 
 
-<p>Translation: [Szabolcs Pasztor](https://github.com/spqpad)</p>
-Last updated: Aug 8, 2016
+Translation: [Szabolcs Pasztor](https://github.com/spqpad)
+<p>Last updated: Aug 8, 2016</p>
