@@ -1,5 +1,8 @@
-# Intro
+# Luban
+English | [中文](/README.md)
+<p>
 Luban is an image compressing tool for android with efficacy very close to that of WeChat Moments.
+</p>
 
 # Description
 With mobile development, showing images in an app has become a very frequent task.
@@ -89,3 +92,7 @@ With RxJava, more freedom is left to the programmer on controlling the process.
     WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
     See the License for the specific language governing permissions and
     limitations under the License.
+
+
+Translation: [Szabolcs Pasztor](https://github.com/spqpad)
+<p>Last updated: Aug 8, 2016</p>
