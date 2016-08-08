@@ -1,4 +1,5 @@
 # Luban
+<p>[English](/README-EN.md) | 中文</p>
 Luban(鲁班)——Android图片压缩工具，仿微信朋友圈压缩策略
 
 #项目描述
@@ -89,3 +90,7 @@ RxJava 调用方式请自行随意控制线程
     WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
     See the License for the specific language governing permissions and
     limitations under the License.
+
+
+<p>Translation: [Szabolcs Pasztor](https://github.com/spqpad)</p>
+Last updated: Aug 8, 2016
