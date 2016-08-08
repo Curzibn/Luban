@@ -1,5 +1,5 @@
 # Luban
-[English](/README-EN.md) | 中文
+[English](/Translation/README-EN.md) | 中文
 <p>
 Luban(鲁班)——Android图片压缩工具，仿微信朋友圈压缩策略
 </p>
