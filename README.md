@@ -1,4 +1,4 @@
-to see the english [README](/Translation/README-EN.md)
+[English](/Translation/README-EN.md)
 
 # Luban
 Luban(鲁班)——Android图片压缩工具，仿微信朋友圈压缩策略
