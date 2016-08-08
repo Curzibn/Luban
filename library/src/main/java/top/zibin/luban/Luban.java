@@ -398,6 +398,8 @@ public class Luban {
         int options = 100;
         bitmap.compress(Bitmap.CompressFormat.JPEG, options, stream);
 
+        int i = (int) (size / stream.toByteArray().length / 1024.0 * 100);
+
         while (stream.toByteArray().length / 1024 > size) {
             stream.reset();
             options -= 6;

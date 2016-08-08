@@ -1,6 +1,7 @@
 package top.zibin.luban.example;
 
 import android.content.Intent;
+import android.net.Uri;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v7.app.AppCompatActivity;
@@ -112,6 +113,11 @@ public class MainActivity extends AppCompatActivity {
                     @Override
                     public void call(File file) {
                         Glide.with(MainActivity.this).load(file).into(image);
+
+                        Intent intent = new Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE);
+                        Uri uri = Uri.fromFile(file);
+                        intent.setData(uri);
+                        MainActivity.this.sendBroadcast(intent);
 
                         thumbFileSize.setText(file.length() / 1024 + "k");
                         thumbImageSize.setText(Luban.get(getApplicationContext()).getImageSize(file.getPath())[0] + " * " + Luban.get(getApplicationContext()).getImageSize(file.getPath())[1]);
