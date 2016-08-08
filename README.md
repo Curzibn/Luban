@@ -92,5 +92,4 @@ RxJava 调用方式请自行随意控制线程
     limitations under the License.
 
 
-<p>Translation: [Szabolcs Pasztor](https://github.com/spqpad)</p>
-Last updated: Aug 8, 2016
+
