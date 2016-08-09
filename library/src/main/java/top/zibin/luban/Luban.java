@@ -87,7 +87,13 @@ public class Luban {
         if (compressListener != null) compressListener.onStart();
 
         if (gear == Luban.FIRST_GEAR)
-            Observable.just(firstCompress(mFile))
+            Observable.just(mFile)
+                    .map(new Func1<File, File>() {
+                        @Override
+                        public File call(File file) {
+                            return firstCompress(file);
+                        }
+                    })
                     .subscribeOn(Schedulers.io())
                     .observeOn(AndroidSchedulers.mainThread())
                     .doOnError(new Action1<Throwable>() {
@@ -110,7 +116,13 @@ public class Luban {
                         }
                     });
         else if (gear == Luban.THIRD_GEAR)
-            Observable.just(thirdCompress(mFile.getAbsolutePath()))
+            Observable.just(mFile)
+                    .map(new Func1<File, File>() {
+                        @Override
+                        public File call(File file) {
+                            return thirdCompress(file);
+                        }
+                    })
                     .subscribeOn(Schedulers.io())
                     .observeOn(AndroidSchedulers.mainThread())
                     .doOnError(new Action1<Throwable>() {
@@ -153,16 +165,27 @@ public class Luban {
 
     public Observable<File> asObservable() {
         if (gear == FIRST_GEAR)
-            return Observable.just(firstCompress(mFile));
+            return Observable.just(mFile).map(new Func1<File, File>() {
+                @Override
+                public File call(File file) {
+                    return firstCompress(file);
+                }
+            });
         else if (gear == THIRD_GEAR)
-            return Observable.just(thirdCompress(mFile.getAbsolutePath()));
+            return Observable.just(mFile).map(new Func1<File, File>() {
+                @Override
+                public File call(File file) {
+                    return thirdCompress(file);
+                }
+            });
         else return Observable.empty();
     }
 
-    private File thirdCompress(@NonNull String filePath) {
+    private File thirdCompress(@NonNull File file) {
         String thumb = mCacheDir.getAbsolutePath() + "/" + System.currentTimeMillis();
 
-        double scale;
+        double size;
+        String filePath = file.getAbsolutePath();
 
         int angle = getImageSpinAngle(filePath);
         int width = getImageSize(filePath)[0];
@@ -173,44 +196,48 @@ public class Luban {
         width = thumbW > thumbH ? thumbH : thumbW;
         height = thumbW > thumbH ? thumbW : thumbH;
 
-        double c = ((double) width / height);
+        double scale = ((double) width / height);
 
-        if (c <= 1 && c > 0.5625) {
+        if (scale <= 1 && scale > 0.5625) {
             if (height < 1664) {
-                scale = (width * height) / Math.pow(1664, 2) * 150;
-                scale = scale < 60 ? 60 : scale;
+                if (file.length() / 1024 < 150) return file;
+
+                size = (width * height) / Math.pow(1664, 2) * 150;
+                size = size < 60 ? 60 : size;
             } else if (height >= 1664 && height < 4990) {
                 thumbW = width / 2;
                 thumbH = height / 2;
-                scale = (thumbW * thumbH) / Math.pow(2495, 2) * 300;
-                scale = scale < 60 ? 60 : scale;
+                size = (thumbW * thumbH) / Math.pow(2495, 2) * 300;
+                size = size < 60 ? 60 : size;
             } else if (height >= 4990 && height < 10240) {
                 thumbW = width / 4;
                 thumbH = height / 4;
-                scale = (thumbW * thumbH) / Math.pow(2560, 2) * 300;
-                scale = scale < 100 ? 100 : scale;
+                size = (thumbW * thumbH) / Math.pow(2560, 2) * 300;
+                size = size < 100 ? 100 : size;
             } else {
                 int multiple = height / 1280 == 0 ? 1 : height / 1280;
                 thumbW = width / multiple;
                 thumbH = height / multiple;
-                scale = (thumbW * thumbH) / Math.pow(2560, 2) * 300;
-                scale = scale < 100 ? 100 : scale;
+                size = (thumbW * thumbH) / Math.pow(2560, 2) * 300;
+                size = size < 100 ? 100 : size;
             }
-        } else if (c <= 0.5625 && c > 0.5) {
+        } else if (scale <= 0.5625 && scale > 0.5) {
+            if (height < 1280 && file.length() / 1024 < 200) return file;
+
             int multiple = height / 1280 == 0 ? 1 : height / 1280;
             thumbW = width / multiple;
             thumbH = height / multiple;
-            scale = (thumbW * thumbH) / (1440.0 * 2560.0) * 200;
-            scale = scale < 100 ? 100 : scale;
+            size = (thumbW * thumbH) / (1440.0 * 2560.0) * 200;
+            size = size < 100 ? 100 : size;
         } else {
-            int multiple = (int) Math.ceil(height / (1280.0 / c));
+            int multiple = (int) Math.ceil(height / (1280.0 / scale));
             thumbW = width / multiple;
             thumbH = height / multiple;
-            scale = ((thumbW * thumbH) / (1280.0 * (1280 / c))) * 500;
-            scale = scale < 100 ? 100 : scale;
+            size = ((thumbW * thumbH) / (1280.0 * (1280 / scale))) * 500;
+            size = size < 100 ? 100 : size;
         }
 
-        return compress(filePath, thumb, thumbW, thumbH, angle, (long) scale);
+        return compress(filePath, thumb, thumbW, thumbH, angle, (long) size);
     }
 
     private File firstCompress(@NonNull File file) {

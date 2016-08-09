@@ -1,6 +1,7 @@
 package top.zibin.luban.example;
 
 import android.content.Intent;
+import android.net.Uri;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v7.app.AppCompatActivity;
@@ -8,6 +9,7 @@ import android.support.v7.widget.Toolbar;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.bumptech.glide.Glide;
 
@@ -69,6 +71,7 @@ public class MainActivity extends AppCompatActivity {
                 .setCompressListener(new OnCompressListener() {
                     @Override
                     public void onStart() {
+                        Toast.makeText(MainActivity.this, "I'm start", Toast.LENGTH_SHORT).show();
                     }
 
                     @Override
@@ -113,6 +116,11 @@ public class MainActivity extends AppCompatActivity {
                     public void call(File file) {
                         Glide.with(MainActivity.this).load(file).into(image);
 
+                        Intent intent = new Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE);
+                        Uri uri = Uri.fromFile(file);
+                        intent.setData(uri);
+                        MainActivity.this.sendBroadcast(intent);
+
                         thumbFileSize.setText(file.length() / 1024 + "k");
                         thumbImageSize.setText(Luban.get(getApplicationContext()).getImageSize(file.getPath())[0] + " * " + Luban.get(getApplicationContext()).getImageSize(file.getPath())[1]);
                     }
@@ -131,7 +139,7 @@ public class MainActivity extends AppCompatActivity {
                 fileSize.setText(imgFile.length() / 1024 + "k");
                 imageSize.setText(Luban.get(this).getImageSize(imgFile.getPath())[0] + " * " + Luban.get(this).getImageSize(imgFile.getPath())[1]);
 
-                compressWithRx(new File(photos.get(0)));
+                compressWithLs(new File(photos.get(0)));
             }
         }
     }
