@@ -9,6 +9,7 @@ import android.support.v7.widget.Toolbar;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.bumptech.glide.Glide;
 
@@ -70,6 +71,7 @@ public class MainActivity extends AppCompatActivity {
                 .setCompressListener(new OnCompressListener() {
                     @Override
                     public void onStart() {
+                        Toast.makeText(MainActivity.this, "I'm start", Toast.LENGTH_SHORT).show();
                     }
 
                     @Override
@@ -137,7 +139,7 @@ public class MainActivity extends AppCompatActivity {
                 fileSize.setText(imgFile.length() / 1024 + "k");
                 imageSize.setText(Luban.get(this).getImageSize(imgFile.getPath())[0] + " * " + Luban.get(this).getImageSize(imgFile.getPath())[1]);
 
-                compressWithRx(new File(photos.get(0)));
+                compressWithLs(new File(photos.get(0)));
             }
         }
     }

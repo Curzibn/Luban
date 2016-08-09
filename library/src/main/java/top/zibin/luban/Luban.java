@@ -87,7 +87,13 @@ public class Luban {
         if (compressListener != null) compressListener.onStart();
 
         if (gear == Luban.FIRST_GEAR)
-            Observable.just(firstCompress(mFile))
+            Observable.just(mFile)
+                    .map(new Func1<File, File>() {
+                        @Override
+                        public File call(File file) {
+                            return firstCompress(file);
+                        }
+                    })
                     .subscribeOn(Schedulers.io())
                     .observeOn(AndroidSchedulers.mainThread())
                     .doOnError(new Action1<Throwable>() {
@@ -110,7 +116,13 @@ public class Luban {
                         }
                     });
         else if (gear == Luban.THIRD_GEAR)
-            Observable.just(thirdCompress(mFile))
+            Observable.just(mFile)
+                    .map(new Func1<File, File>() {
+                        @Override
+                        public File call(File file) {
+                            return thirdCompress(file);
+                        }
+                    })
                     .subscribeOn(Schedulers.io())
                     .observeOn(AndroidSchedulers.mainThread())
                     .doOnError(new Action1<Throwable>() {
@@ -153,9 +165,19 @@ public class Luban {
 
     public Observable<File> asObservable() {
         if (gear == FIRST_GEAR)
-            return Observable.just(firstCompress(mFile));
+            return Observable.just(mFile).map(new Func1<File, File>() {
+                @Override
+                public File call(File file) {
+                    return firstCompress(file);
+                }
+            });
         else if (gear == THIRD_GEAR)
-            return Observable.just(thirdCompress(mFile));
+            return Observable.just(mFile).map(new Func1<File, File>() {
+                @Override
+                public File call(File file) {
+                    return thirdCompress(file);
+                }
+            });
         else return Observable.empty();
     }
 
