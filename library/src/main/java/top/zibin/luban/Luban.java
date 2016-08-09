@@ -16,6 +16,7 @@ import java.io.IOException;
 import rx.Observable;
 import rx.android.schedulers.AndroidSchedulers;
 import rx.functions.Action1;
+import rx.functions.Func0;
 import rx.functions.Func1;
 import rx.schedulers.Schedulers;
 
@@ -165,17 +166,17 @@ public class Luban {
 
     public Observable<File> asObservable() {
         if (gear == FIRST_GEAR)
-            return Observable.just(mFile).map(new Func1<File, File>() {
+            return Observable.defer(new Func0<Observable<File>>() {
                 @Override
-                public File call(File file) {
-                    return firstCompress(file);
+                public Observable<File> call() {
+                    return Observable.just(firstCompress(mFile));
                 }
             });
         else if (gear == THIRD_GEAR)
-            return Observable.just(mFile).map(new Func1<File, File>() {
+            return Observable.defer(new Func0<Observable<File>>() {
                 @Override
-                public File call(File file) {
-                    return thirdCompress(file);
+                public Observable<File> call() {
+                    return Observable.just(thirdCompress(mFile));
                 }
             });
         else return Observable.empty();
