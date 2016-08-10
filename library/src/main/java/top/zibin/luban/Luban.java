@@ -227,7 +227,7 @@ public class Luban {
             int multiple = height / 1280 == 0 ? 1 : height / 1280;
             thumbW = width / multiple;
             thumbH = height / multiple;
-            size = (thumbW * thumbH) / (1440.0 * 2560.0) * 200;
+            size = (thumbW * thumbH) / (1440.0 * 2560.0) * 400;
             size = size < 100 ? 100 : size;
         } else {
             int multiple = (int) Math.ceil(height / (1280.0 / scale));
@@ -425,7 +425,7 @@ public class Luban {
         int options = 100;
         bitmap.compress(Bitmap.CompressFormat.JPEG, options, stream);
 
-        while (stream.toByteArray().length / 1024 > size) {
+        while (stream.toByteArray().length / 1024 > size && options > 6) {
             stream.reset();
             options -= 6;
             bitmap.compress(Bitmap.CompressFormat.JPEG, options, stream);
