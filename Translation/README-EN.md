@@ -23,7 +23,7 @@ Content | Original picture | Luban | Wechat
 Extended screenshot|1080*6433,1.56M|1080*6433,351k|1080*6433,482k
 
 # Setup
-    compile 'top.zibin:Luban:1.0.5'
+    compile 'top.zibin:Luban:1.0.7'
     
 # Usage
 ### Via a Listener
