@@ -23,6 +23,9 @@ Content | Original picture | Luban | Wechat
 Extended screenshot|1080*6433,1.56M|1080*6433,351k|1080*6433,482k
 
 # Setup
+    compile 'io.reactivex:rxandroid:1.2.1'
+    compile 'io.reactivex:rxjava:1.1.6'
+    
     compile 'top.zibin:Luban:1.0.7'
     
 # Usage
