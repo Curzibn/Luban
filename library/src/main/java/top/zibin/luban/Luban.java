@@ -36,6 +36,7 @@ public class Luban {
     private OnCompressListener compressListener;
     private File mFile;
     private int gear = THIRD_GEAR;
+    private String filename;
 
     Luban(File cacheDir) {
         mCacheDir = cacheDir;
@@ -163,6 +164,11 @@ public class Luban {
         return this;
     }
 
+    public Luban setFilename(String filename) {
+        this.filename = filename;
+        return this;
+    }
+
     public Observable<File> asObservable() {
         if (gear == FIRST_GEAR)
             return Observable.just(mFile).map(new Func1<File, File>() {
@@ -183,6 +189,8 @@ public class Luban {
 
     private File thirdCompress(@NonNull File file) {
         String thumb = mCacheDir.getAbsolutePath() + "/" + System.currentTimeMillis();
+
+        thumb = filename == null || filename.isEmpty() ? thumb : filename;
 
         double size;
         String filePath = file.getAbsolutePath();
@@ -247,6 +255,9 @@ public class Luban {
 
         String filePath = file.getAbsolutePath();
         String thumbFilePath = mCacheDir.getAbsolutePath() + "/" + System.currentTimeMillis();
+
+        thumbFilePath = filename == null || filename.isEmpty() ? thumbFilePath : filename;
+
         long size = 0;
         long maxSize = file.length() / 5;
 
