@@ -80,6 +80,12 @@ RxJava 调用方式请自行随意控制线程
                     //TODO 压缩成功后调用，返回压缩后的图片文件
                 }
             });
+###方法对应表
+方法名|功能
+---|---
+load(File file)|传入要压缩的文件
+setFilename(String filename)|设置压缩后图片命名
+putGear(int gear)|设置压缩档次
 
 #License
 
