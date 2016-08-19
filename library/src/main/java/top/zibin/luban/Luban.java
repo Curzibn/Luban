@@ -38,6 +38,7 @@ public class Luban {
     private File mFile;
     private int gear = THIRD_GEAR;
     private String filename;
+    private boolean keepFileExt;
 
     Luban(File cacheDir) {
         mCacheDir = cacheDir;
@@ -170,6 +171,11 @@ public class Luban {
         return this;
     }
 
+    public Luban setKeepFileExt(boolean keepFileExt) {
+        this.keepFileExt = keepFileExt;
+        return this;
+    }
+
     public Observable<File> asObservable() {
         if (gear == FIRST_GEAR)
             return Observable.just(mFile).map(new Func1<File, File>() {
@@ -189,10 +195,16 @@ public class Luban {
     }
 
     private File thirdCompress(@NonNull File file) {
-        String thumb = mCacheDir.getAbsolutePath() + File.separator + (TextUtils.isEmpty(filename) ? System.currentTimeMillis() : filename);
+        String filePath = file.getAbsolutePath();
+        String fileName;
+        if (TextUtils.isEmpty(filename)) {
+            fileName = System.currentTimeMillis() + (keepFileExt ? getFileExt(file.getName()) : "");
+        } else {
+            fileName = filename;
+        }
+        String thumbFilePath = mCacheDir.getAbsolutePath() + File.separator + fileName;
 
         double size;
-        String filePath = file.getAbsolutePath();
 
         int angle = getImageSpinAngle(filePath);
         int width = getImageSize(filePath)[0];
@@ -244,7 +256,7 @@ public class Luban {
             size = size < 100 ? 100 : size;
         }
 
-        return compress(filePath, thumb, thumbW, thumbH, angle, (long) size);
+        return compress(filePath, thumbFilePath, thumbW, thumbH, angle, (long) size);
     }
 
     private File firstCompress(@NonNull File file) {
@@ -253,7 +265,13 @@ public class Luban {
         int shortSide = 1280;
 
         String filePath = file.getAbsolutePath();
-        String thumbFilePath = mCacheDir.getAbsolutePath() + File.separator + (TextUtils.isEmpty(filename) ? System.currentTimeMillis() : filename) ;
+        String fileName;
+        if (TextUtils.isEmpty(filename)) {
+            fileName = System.currentTimeMillis() + (keepFileExt ? getFileExt(file.getName()) : "");
+        } else {
+            fileName = filename;
+        }
+        String thumbFilePath = mCacheDir.getAbsolutePath() + File.separator + fileName;
 
         long size = 0;
         long maxSize = file.length() / 5;
@@ -286,6 +304,15 @@ public class Luban {
         }
 
         return compress(filePath, thumbFilePath, width, height, angle, size);
+    }
+
+    /**
+     * get extension of file name
+     * @param filename file name
+     * @return extension of file name
+     */
+    private static String getFileExt(String filename) {
+        return filename.lastIndexOf(".") == -1 ? "" : filename.substring(filename.lastIndexOf("."));
     }
 
     /**
