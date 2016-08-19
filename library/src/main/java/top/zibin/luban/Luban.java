@@ -13,6 +13,8 @@ import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
 import rx.Observable;
 import rx.android.schedulers.AndroidSchedulers;
@@ -36,6 +38,7 @@ public class Luban {
 
     private OnCompressListener compressListener;
     private File mFile;
+    private List<File> mFiles = new ArrayList<>();
     private int gear = THIRD_GEAR;
     private String filename;
     private boolean keepFileExt;
@@ -85,16 +88,20 @@ public class Luban {
     }
 
     public Luban launch() {
-        checkNotNull(mFile, "the image file cannot be null, please call .load() before this method!");
+        checkNotNull(mFiles, "the image file cannot be null, please call .load() before this method!");
 
         if (compressListener != null) compressListener.onStart();
 
         if (gear == Luban.FIRST_GEAR)
-            Observable.just(mFile)
-                    .map(new Func1<File, File>() {
+            Observable.just(mFiles)
+                    .map(new Func1<List<File>, List<File>>() {
                         @Override
-                        public File call(File file) {
-                            return firstCompress(file);
+                        public List<File> call(List<File> files) {
+                            List<File> compressedFiles = new ArrayList<>();
+                            for (File file :files){
+                                compressedFiles.add(firstCompress(file));
+                            }
+                            return compressedFiles;
                         }
                     })
                     .subscribeOn(Schedulers.io())
@@ -105,25 +112,29 @@ public class Luban {
                             if (compressListener != null) compressListener.onError(throwable);
                         }
                     })
-                    .onErrorResumeNext(Observable.<File>empty())
-                    .filter(new Func1<File, Boolean>() {
+                    .onErrorResumeNext(Observable.<List<File>>empty())
+                    .filter(new Func1<List<File>, Boolean>() {
                         @Override
-                        public Boolean call(File file) {
-                            return file != null;
+                        public Boolean call(List<File> files) {
+                            return files != null && !files.isEmpty();
                         }
                     })
-                    .subscribe(new Action1<File>() {
+                    .subscribe(new Action1<List<File>>() {
                         @Override
-                        public void call(File file) {
+                        public void call(List<File> file) {
                             if (compressListener != null) compressListener.onSuccess(file);
                         }
                     });
         else if (gear == Luban.THIRD_GEAR)
-            Observable.just(mFile)
-                    .map(new Func1<File, File>() {
+            Observable.just(mFiles)
+                    .map(new Func1<List<File>, List<File>>() {
                         @Override
-                        public File call(File file) {
-                            return thirdCompress(file);
+                        public List<File> call(List<File> files) {
+                            List<File> compressedFiles = new ArrayList<>();
+                            for (File file :files){
+                                compressedFiles.add(thirdCompress(file));
+                            }
+                            return compressedFiles;
                         }
                     })
                     .subscribeOn(Schedulers.io())
@@ -134,17 +145,17 @@ public class Luban {
                             if (compressListener != null) compressListener.onError(throwable);
                         }
                     })
-                    .onErrorResumeNext(Observable.<File>empty())
-                    .filter(new Func1<File, Boolean>() {
+                    .onErrorResumeNext(Observable.<List<File>>empty())
+                    .filter(new Func1<List<File>, Boolean>() {
                         @Override
-                        public Boolean call(File file) {
-                            return file != null;
+                        public Boolean call(List<File> files) {
+                            return files != null && !files.isEmpty();
                         }
                     })
-                    .subscribe(new Action1<File>() {
+                    .subscribe(new Action1<List<File>>() {
                         @Override
-                        public void call(File file) {
-                            if (compressListener != null) compressListener.onSuccess(file);
+                        public void call(List<File> files) {
+                            if (compressListener != null) compressListener.onSuccess(files);
                         }
                     });
 
@@ -153,6 +164,12 @@ public class Luban {
 
     public Luban load(File file) {
         mFile = file;
+        mFiles.add(file);
+        return this;
+    }
+
+    public Luban load(List<File> files) {
+        mFiles = files;
         return this;
     }
 

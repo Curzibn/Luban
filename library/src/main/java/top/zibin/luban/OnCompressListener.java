@@ -1,6 +1,7 @@
 package top.zibin.luban;
 
 import java.io.File;
+import java.util.List;
 
 public interface OnCompressListener {
 
@@ -12,7 +13,7 @@ public interface OnCompressListener {
     /**
      * Fired when a compression returns successfully, override to handle in your own code
      */
-    void onSuccess(File file);
+    void onSuccess(List<File> file);
 
     /**
      * Fired when a compression fails to complete, override to handle in your own code
