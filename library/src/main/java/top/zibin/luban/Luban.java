@@ -6,6 +6,7 @@ import android.graphics.BitmapFactory;
 import android.graphics.Matrix;
 import android.media.ExifInterface;
 import android.support.annotation.NonNull;
+import android.text.TextUtils;
 import android.util.Log;
 
 import java.io.ByteArrayOutputStream;
@@ -188,9 +189,7 @@ public class Luban {
     }
 
     private File thirdCompress(@NonNull File file) {
-        String thumb = mCacheDir.getAbsolutePath() + "/" + System.currentTimeMillis();
-
-        thumb = filename == null || filename.isEmpty() ? thumb : filename;
+        String thumb = mCacheDir.getAbsolutePath() + File.separator + (TextUtils.isEmpty(filename) ? System.currentTimeMillis() : filename);
 
         double size;
         String filePath = file.getAbsolutePath();
@@ -254,9 +253,7 @@ public class Luban {
         int shortSide = 1280;
 
         String filePath = file.getAbsolutePath();
-        String thumbFilePath = mCacheDir.getAbsolutePath() + "/" + System.currentTimeMillis();
-
-        thumbFilePath = filename == null || filename.isEmpty() ? thumbFilePath : filename;
+        String thumbFilePath = mCacheDir.getAbsolutePath() + File.separator + (TextUtils.isEmpty(filename) ? System.currentTimeMillis() : filename) ;
 
         long size = 0;
         long maxSize = file.length() / 5;
