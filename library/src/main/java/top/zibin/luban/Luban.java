@@ -24,11 +24,11 @@ import static top.zibin.luban.Preconditions.checkNotNull;
 
 public class Luban {
 
-    public static final int FIRST_GEAR = 1;
+    private static final int FIRST_GEAR = 1;
     public static final int THIRD_GEAR = 3;
 
     private static final String TAG = "Luban";
-    public static String DEFAULT_DISK_CACHE_DIR = "luban_disk_cache";
+    private static String DEFAULT_DISK_CACHE_DIR = "luban_disk_cache";
 
     private static volatile Luban INSTANCE;
 
@@ -39,7 +39,7 @@ public class Luban {
     private int gear = THIRD_GEAR;
     private String filename;
 
-    Luban(File cacheDir) {
+    private Luban(File cacheDir) {
         mCacheDir = cacheDir;
     }
 
@@ -50,7 +50,7 @@ public class Luban {
      * @param context A context.
      * @see #getPhotoCacheDir(android.content.Context, String)
      */
-    public static File getPhotoCacheDir(Context context) {
+    private static File getPhotoCacheDir(Context context) {
         return getPhotoCacheDir(context, Luban.DEFAULT_DISK_CACHE_DIR);
     }
 
@@ -62,7 +62,7 @@ public class Luban {
      * @param cacheName The name of the subdirectory in which to store the cache.
      * @see #getPhotoCacheDir(android.content.Context)
      */
-    public static File getPhotoCacheDir(Context context, String cacheName) {
+    private static File getPhotoCacheDir(Context context, String cacheName) {
         File cacheDir = context.getCacheDir();
         if (cacheDir != null) {
             File result = new File(cacheDir, cacheName);
@@ -189,7 +189,8 @@ public class Luban {
     }
 
     private File thirdCompress(@NonNull File file) {
-        String thumb = mCacheDir.getAbsolutePath() + File.separator + (TextUtils.isEmpty(filename) ? System.currentTimeMillis() : filename);
+        String thumb = mCacheDir.getAbsolutePath() + File.separator +
+                (TextUtils.isEmpty(filename) ? System.currentTimeMillis() : filename);
 
         double size;
         String filePath = file.getAbsolutePath();
@@ -253,7 +254,7 @@ public class Luban {
         int shortSide = 1280;
 
         String filePath = file.getAbsolutePath();
-        String thumbFilePath = mCacheDir.getAbsolutePath() + File.separator + (TextUtils.isEmpty(filename) ? System.currentTimeMillis() : filename) ;
+        String thumbFilePath = mCacheDir.getAbsolutePath() + File.separator + (TextUtils.isEmpty(filename) ? System.currentTimeMillis() : filename);
 
         long size = 0;
         long maxSize = file.length() / 5;
