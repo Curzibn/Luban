@@ -1,7 +1,7 @@
 中文 | [English](/Translation/README-EN.md)
 
 # Luban
-Luban(鲁班)——Android图片压缩工具，仿微信朋友圈压缩策略
+Luban(鲁班)——Android图片压缩工具，仿微信朋友圈压缩策略 
 
 #项目描述
 
@@ -27,7 +27,7 @@ Luban(鲁班)——Android图片压缩工具，仿微信朋友圈压缩策略
     compile 'io.reactivex:rxandroid:1.2.1'
     compile 'io.reactivex:rxjava:1.1.6'
     
-    compile 'top.zibin:Luban:1.0.7'
+    compile 'top.zibin:Luban:1.0.8'
     
 #使用
 ###Listener方式
