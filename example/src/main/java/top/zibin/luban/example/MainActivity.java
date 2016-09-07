@@ -1,8 +1,13 @@
 package top.zibin.luban.example;
 
+import android.Manifest;
 import android.content.Intent;
+import android.content.pm.PackageManager;
+import android.content.pm.PermissionInfo;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
@@ -50,15 +55,40 @@ public class MainActivity extends AppCompatActivity {
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                PhotoPicker.builder()
-                        .setPhotoCount(1)
-                        .setShowCamera(true)
-                        .setShowGif(true)
-                        .setPreviewEnabled(false)
-                        .start(MainActivity.this, PhotoPicker.REQUEST_CODE);
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                    if (checkSelfPermission(Manifest.permission.READ_EXTERNAL_STORAGE)!= PackageManager.PERMISSION_GRANTED) {
+                        if (shouldShowRequestPermissionRationale(Manifest.permission.READ_EXTERNAL_STORAGE)) {
+                            Toast.makeText(MainActivity.this, "hint msg", Toast.LENGTH_SHORT).show();
+                        }
+                        requestPermissions(new String[]{Manifest.permission.READ_EXTERNAL_STORAGE}, 100);
+                    } else {
+                        gotoPick();
+                    }
+                } else {
+                    gotoPick();
+                }
+
 
             }
         });
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        if (requestCode==100) {
+            if (grantResults[0]==PackageManager.PERMISSION_GRANTED)
+                gotoPick();
+        }
+    }
+
+    private void gotoPick() {
+        PhotoPicker.builder()
+                .setPhotoCount(1)
+                .setShowCamera(true)
+                .setShowGif(true)
+                .setPreviewEnabled(false)
+                .start(MainActivity.this, PhotoPicker.REQUEST_CODE);
     }
 
     /**
@@ -71,7 +101,6 @@ public class MainActivity extends AppCompatActivity {
                 .setCompressListener(new OnCompressListener() {
                     @Override
                     public void onStart() {
-                        Toast.makeText(MainActivity.this, "I'm start", Toast.LENGTH_SHORT).show();
                     }
 
                     @Override
@@ -137,9 +166,9 @@ public class MainActivity extends AppCompatActivity {
 
                 File imgFile = new File(photos.get(0));
                 fileSize.setText(imgFile.length() / 1024 + "k");
-                imageSize.setText(Luban.get(this).getImageSize(imgFile.getPath())[0] + " * " + Luban.get(this).getImageSize(imgFile.getPath())[1]);
+                imageSize.setText(Luban.get(this).getImageSize(photos.get(0))[0] + " * " + Luban.get(this).getImageSize(photos.get(0))[1]);
 
-                compressWithLs(new File(photos.get(0)));
+                compressWithRx(new File(photos.get(0)));
             }
         }
     }
