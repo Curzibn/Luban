@@ -14,7 +14,10 @@ import android.widget.Toast;
 import com.bumptech.glide.Glide;
 
 import java.io.File;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
 
 import me.iwf.photopicker.PhotoPicker;
 import rx.Observable;
@@ -31,6 +34,8 @@ public class MainActivity extends AppCompatActivity {
     private TextView imageSize;
     private TextView thumbFileSize;
     private TextView thumbImageSize;
+    private TextView startTime;
+    private TextView endTime;
     private ImageView image;
 
     @Override
@@ -44,6 +49,8 @@ public class MainActivity extends AppCompatActivity {
         imageSize = (TextView) findViewById(R.id.image_size);
         thumbFileSize = (TextView) findViewById(R.id.thumb_file_size);
         thumbImageSize = (TextView) findViewById(R.id.thumb_image_size);
+        startTime = (TextView) findViewById(R.id.start_time);
+        endTime = (TextView) findViewById(R.id.end_time);
         image = (ImageView) findViewById(R.id.image);
 
         FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
@@ -51,7 +58,7 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View view) {
                 PhotoPicker.builder()
-                        .setPhotoCount(1)
+                        .setPhotoCount(9)
                         .setShowCamera(true)
                         .setShowGif(true)
                         .setPreviewEnabled(false)
@@ -61,25 +68,38 @@ public class MainActivity extends AppCompatActivity {
         });
     }
 
+    private String getTime() {
+        return new SimpleDateFormat("HH mm ss SSSS").format(new Date());
+    }
+
     /**
      * 压缩单张图片 Listener 方式
      */
-    private void compressWithLs(File file) {
+    private void compressWithLs(List<File> files) {
         Luban.get(this)
-                .load(file)
+                .load(files)
                 .putGear(Luban.THIRD_GEAR)
                 .setCompressListener(new OnCompressListener() {
                     @Override
                     public void onStart() {
+                        startTime.setText(getTime());
                         Toast.makeText(MainActivity.this, "I'm start", Toast.LENGTH_SHORT).show();
                     }
 
                     @Override
-                    public void onSuccess(File file) {
-                        Glide.with(MainActivity.this).load(file).into(image);
+                    public void onSuccess(List<File> files) {
+                        endTime.setText(getTime());
+                        Glide.with(MainActivity.this).load(files.get(0)).into(image);
 
-                        thumbFileSize.setText(file.length() / 1024 + "k");
-                        thumbImageSize.setText(Luban.get(getApplicationContext()).getImageSize(file.getPath())[0] + " * " + Luban.get(getApplicationContext()).getImageSize(file.getPath())[1]);
+                        String fileSize = "";
+                        String imgSize = "";
+                        for (File file : files) {
+                            fileSize += (file.length() / 1024 + "k\n");
+                            imgSize += (Luban.get(getApplicationContext()).getImageSize(file.getPath())[0] + " * " + Luban.get(getApplicationContext()).getImageSize(file.getPath())[1] + "\n");
+                        }
+
+                        thumbFileSize.setText(fileSize);
+                        thumbImageSize.setText(imgSize);
                     }
 
                     @Override
@@ -135,11 +155,19 @@ public class MainActivity extends AppCompatActivity {
             if (data != null) {
                 ArrayList<String> photos = data.getStringArrayListExtra(PhotoPicker.KEY_SELECTED_PHOTOS);
 
-                File imgFile = new File(photos.get(0));
-                fileSize.setText(imgFile.length() / 1024 + "k");
-                imageSize.setText(Luban.get(this).getImageSize(imgFile.getPath())[0] + " * " + Luban.get(this).getImageSize(imgFile.getPath())[1]);
-
-                compressWithLs(new File(photos.get(0)));
+                List<File> files = new ArrayList<>();
+                for (String photo: photos) {
+                    files.add(new File(photo));
+                }
+                String fileSizeText = "";
+                String imgSizeText = "";
+                for (File file : files) {
+                    fileSizeText += (file.length() / 1024 + "k\n");
+                    imgSizeText += (Luban.get(getApplicationContext()).getImageSize(file.getPath())[0] + " * " + Luban.get(getApplicationContext()).getImageSize(file.getPath())[1] + "\n");
+                }
+                fileSize.setText(fileSizeText);
+                imageSize.setText(imgSizeText);
+                compressWithLs(files);
             }
         }
     }

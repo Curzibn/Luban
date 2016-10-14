@@ -1,10 +1,21 @@
-# Luban
+# Luban-Tai
+[![](https://jitpack.io/v/zhangchaoxu/Luban-Tai.svg)](https://jitpack.io/#zhangchaoxu/Luban-Tai)
 
-<div align="right">
-<a href="Translation/README-EN.md">:book: English Documentation</a>
-</div>
+`Luban-Tai`（鲁班-泰山） —— 基于[鲁班Luban](https://github.com/Curzibn/Luban)实现的图片压缩工具
+
+泰山这个名字的来历是相传泰山是鲁班的徒弟，并且是[有眼不识泰山](http://baike.baidu.com/subview/1032812/18218100.htm)这个歇后语的来历。
 
 `Luban`（鲁班） —— `Android`图片压缩工具，仿微信朋友圈压缩策略。
+
+#与[鲁班Luban](https://github.com/Curzibn/Luban)的区别
+1. 加入多文件压缩支持
+2. 加入保留原有文件后缀名方法
+3. 移除对Rx的依赖
+
+#版本更新
+* v1.1.0
+加入多文件压缩支持
+加入保留原有文件后缀名方法
 
 #项目描述
 
@@ -29,10 +40,16 @@
 #导入
 
 ```sh
-compile 'io.reactivex:rxandroid:1.2.1'
-compile 'io.reactivex:rxjava:1.1.6'
-
-compile 'top.zibin:Luban:1.0.8'
+allprojects {
+ repositories {
+  ...
+  maven { url "https://jitpack.io" }
+ }
+}
+	
+dependencies {
+ compile 'com.github.zhangchaoxu:Luban-Tai:1.1.0'
+}
 ```
 
 #使用
@@ -65,34 +82,7 @@ Luban.get(this)
 
 ### `RxJava`方式
 
-`RxJava`调用方式请自行随意控制线程：
-
-```java
-Luban.get(this)
-        .load(file)
-        .putGear(Luban.THIRD_GEAR)
-        .asObservable()
-        .subscribeOn(Schedulers.io())
-        .observeOn(AndroidSchedulers.mainThread())
-        .doOnError(new Action1<Throwable>() {
-            @Override
-            public void call(Throwable throwable) {
-                throwable.printStackTrace();
-            }
-        })
-        .onErrorResumeNext(new Func1<Throwable, Observable<? extends File>>() {
-            @Override
-            public Observable<? extends File> call(Throwable throwable) {
-                return Observable.empty();
-            }
-        })
-        .subscribe(new Action1<File>() {
-            @Override
-            public void call(File file) {
-                // TODO 压缩成功后调用，返回压缩后的图片文件
-            }
-        }).launch();    //启动压缩
-```
+不准备支持,若要使用,请自行集成或使用[Luban](https://github.com/Curzibn/Luban)
 
 ###方法对应表
 
@@ -105,7 +95,7 @@ putGear(int gear)|设置压缩档次
 #License
 
 
-    Copyright 2016 Zheng Zibin
+    Copyright 2016 Zheng Zibin & Charles Zhang
     
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
