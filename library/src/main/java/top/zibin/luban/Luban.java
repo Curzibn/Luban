@@ -50,7 +50,7 @@ public class Luban {
      * @param context A context.
      * @see #getPhotoCacheDir(android.content.Context, String)
      */
-    private static File getPhotoCacheDir(Context context) {
+    private static synchronized File getPhotoCacheDir(Context context) {
         return getPhotoCacheDir(context, Luban.DEFAULT_DISK_CACHE_DIR);
     }
 
@@ -70,6 +70,12 @@ public class Luban {
                 // File wasn't able to create a directory, or the result exists but not a directory
                 return null;
             }
+
+            File noMedia = new File(cacheDir + "/.nomedia");
+            if (!noMedia.mkdirs() && (!noMedia.exists() || !noMedia.isDirectory())) {
+                return null;
+            }
+
             return result;
         }
         if (Log.isLoggable(TAG, Log.ERROR)) {
@@ -165,6 +171,9 @@ public class Luban {
         return this;
     }
 
+    /**
+     * @deprecated
+     */
     public Luban setFilename(String filename) {
         this.filename = filename;
         return this;
@@ -190,7 +199,7 @@ public class Luban {
 
     private File thirdCompress(@NonNull File file) {
         String thumb = mCacheDir.getAbsolutePath() + File.separator +
-                (TextUtils.isEmpty(filename) ? System.currentTimeMillis() : filename);
+                (TextUtils.isEmpty(filename) ? System.currentTimeMillis() : filename) + ".jpg";
 
         double size;
         String filePath = file.getAbsolutePath();
@@ -254,7 +263,8 @@ public class Luban {
         int shortSide = 1280;
 
         String filePath = file.getAbsolutePath();
-        String thumbFilePath = mCacheDir.getAbsolutePath() + File.separator + (TextUtils.isEmpty(filename) ? System.currentTimeMillis() : filename);
+        String thumbFilePath = mCacheDir.getAbsolutePath() + File.separator +
+                (TextUtils.isEmpty(filename) ? System.currentTimeMillis() : filename) + ".jpg";
 
         long size = 0;
         long maxSize = file.length() / 5;
