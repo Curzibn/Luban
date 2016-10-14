@@ -6,6 +6,7 @@ import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.util.Log;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
@@ -51,7 +52,7 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View view) {
                 PhotoPicker.builder()
-                        .setPhotoCount(1)
+                        .setPhotoCount(5)
                         .setShowCamera(true)
                         .setShowGif(true)
                         .setPreviewEnabled(false)
@@ -68,6 +69,7 @@ public class MainActivity extends AppCompatActivity {
         Luban.get(this)
                 .load(file)
                 .putGear(Luban.THIRD_GEAR)
+                .setFilename(System.currentTimeMillis() + "")
                 .setCompressListener(new OnCompressListener() {
                     @Override
                     public void onStart() {
@@ -76,6 +78,8 @@ public class MainActivity extends AppCompatActivity {
 
                     @Override
                     public void onSuccess(File file) {
+                        Log.i("path", file.getAbsolutePath());
+
                         Glide.with(MainActivity.this).load(file).into(image);
 
                         thumbFileSize.setText(file.length() / 1024 + "k");
@@ -139,7 +143,8 @@ public class MainActivity extends AppCompatActivity {
                 fileSize.setText(imgFile.length() / 1024 + "k");
                 imageSize.setText(Luban.get(this).getImageSize(imgFile.getPath())[0] + " * " + Luban.get(this).getImageSize(imgFile.getPath())[1]);
 
-                compressWithLs(new File(photos.get(0)));
+                for (int i = 0; i < photos.size(); i++)
+                    compressWithLs(new File(photos.get(i)));
             }
         }
     }
