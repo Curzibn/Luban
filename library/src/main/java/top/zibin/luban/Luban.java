@@ -26,11 +26,11 @@ import static top.zibin.luban.Preconditions.checkNotNull;
 
 public class Luban {
 
-    public static final int FIRST_GEAR = 1;
+    private static final int FIRST_GEAR = 1;
     public static final int THIRD_GEAR = 3;
 
     private static final String TAG = "Luban";
-    public static String DEFAULT_DISK_CACHE_DIR = "luban_disk_cache";
+    private static String DEFAULT_DISK_CACHE_DIR = "luban_disk_cache";
 
     private static volatile Luban INSTANCE;
 
@@ -43,7 +43,7 @@ public class Luban {
     private String filename;
     private boolean keepFileExt;
 
-    Luban(File cacheDir) {
+    private Luban(File cacheDir) {
         mCacheDir = cacheDir;
     }
 
@@ -54,7 +54,7 @@ public class Luban {
      * @param context A context.
      * @see #getPhotoCacheDir(android.content.Context, String)
      */
-    public static File getPhotoCacheDir(Context context) {
+    private static File getPhotoCacheDir(Context context) {
         return getPhotoCacheDir(context, Luban.DEFAULT_DISK_CACHE_DIR);
     }
 
@@ -66,7 +66,7 @@ public class Luban {
      * @param cacheName The name of the subdirectory in which to store the cache.
      * @see #getPhotoCacheDir(android.content.Context)
      */
-    public static File getPhotoCacheDir(Context context, String cacheName) {
+    private static File getPhotoCacheDir(Context context, String cacheName) {
         File cacheDir = context.getCacheDir();
         if (cacheDir != null) {
             File result = new File(cacheDir, cacheName);
