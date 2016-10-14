@@ -32,8 +32,14 @@
 compile 'io.reactivex:rxandroid:1.2.1'
 compile 'io.reactivex:rxjava:1.1.6'
 
-compile 'top.zibin:Luban:1.0.8'
+compile 'top.zibin:Luban:1.0.9'
 ```
+
+#Release Notes
+
+### [v1.0.9, 2016/10/14](https://github.com/Curzibn/Luban/milestone/1)
+
+- 修改压缩后文件自带后缀，根据([#77](https://github.com/Curzibn/Luban/issues/77))提供的思路
 
 #使用
 
