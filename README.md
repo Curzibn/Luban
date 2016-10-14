@@ -1,5 +1,4 @@
-# Luban-Tai
-[![](https://jitpack.io/v/zhangchaoxu/Luban-Tai.svg)](https://jitpack.io/#zhangchaoxu/Luban-Tai)
+# Luban-Tai [![](https://jitpack.io/v/zhangchaoxu/Luban-Tai.svg)](https://jitpack.io/#zhangchaoxu/Luban-Tai)
 
 `Luban-Tai`（鲁班-泰山） —— 基于[鲁班Luban](https://github.com/Curzibn/Luban)实现的图片压缩工具
 
@@ -10,12 +9,11 @@
 #与[鲁班Luban](https://github.com/Curzibn/Luban)的区别
 1. 加入多文件压缩支持
 2. 加入保留原有文件后缀名方法
-3. 移除对Rx的依赖
 
 #版本更新
 * v1.1.0
-加入多文件压缩支持
-加入保留原有文件后缀名方法
+- 加入多文件压缩支持
+- 加入保留原有文件后缀名方法
 
 #项目描述
 
@@ -49,6 +47,9 @@ allprojects {
 	
 dependencies {
  compile 'com.github.zhangchaoxu:Luban-Tai:1.1.0'
+ 
+ compile 'io.reactivex:rxjava:1.2.1'
+ compile 'io.reactivex:rxandroid:1.2.1'
 }
 ```
 
