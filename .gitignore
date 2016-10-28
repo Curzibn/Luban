@@ -11,3 +11,6 @@
 vcs.xml
 
 .idea/misc.xml
+libs/
+src/main/res/drawable/
+.idea
