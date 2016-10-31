@@ -449,12 +449,14 @@ public class Luban {
             options -= 6;
             bitmap.compress(Bitmap.CompressFormat.JPEG, options, stream);
         }
+        bitmap.recycle();
 
         try {
             FileOutputStream fos = new FileOutputStream(filePath);
             fos.write(stream.toByteArray());
             fos.flush();
             fos.close();
+            stream.close();
         } catch (IOException e) {
             e.printStackTrace();
         }
