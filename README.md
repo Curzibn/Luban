@@ -74,28 +74,28 @@ Luban.get(this)
 
 ```java
 Luban.get(this)
-        .load(file)
-        .asObservable()
-        .subscribeOn(Schedulers.io())
-        .observeOn(AndroidSchedulers.mainThread())
-        .doOnError(new Action1<Throwable>() {
-            @Override
-            public void call(Throwable throwable) {
-                throwable.printStackTrace();
-            }
-        })
-        .onErrorResumeNext(new Func1<Throwable, Observable<? extends File>>() {
-            @Override
-            public Observable<? extends File> call(Throwable throwable) {
-                return Observable.empty();
-            }
-        })
-        .subscribe(new Action1<File>() {
-            @Override
-            public void call(File file) {
-                // TODO 压缩成功后调用，返回压缩后的图片文件
-            }
-        }).launch();    //启动压缩
+    .load(file)
+    .asObservable()
+    .subscribeOn(Schedulers.io())
+    .observeOn(AndroidSchedulers.mainThread())
+    .doOnError(new Consumer<Throwable>() {
+        @Override
+        public void accept(Throwable throwable) throws Exception {
+            throwable.printStackTrace();
+        }
+    })
+    .onErrorResumeNext(new Function<Throwable, ObservableSource<? extends File>>() {
+        @Override
+        public ObservableSource<? extends File> apply(Throwable throwable) throws Exception {
+            return Observable.empty();
+        }
+    })
+    .subscribe(new Consumer<File>() {
+        @Override
+        public void accept(File file) throws Exception {
+            // TODO 压缩成功后调用，返回压缩后的图片文件
+        }
+    });     //启动压缩
 ```
 
 ###方法对应表
