@@ -29,10 +29,10 @@
 #导入
 
 ```sh
-compile 'io.reactivex:rxandroid:1.2.1'
-compile 'io.reactivex:rxjava:1.1.6'
+compile 'io.reactivex:rxandroid:2.0.1'
+compile 'io.reactivex:rxjava:2.0.1'
 
-compile 'top.zibin:Luban:1.0.9'
+compile 'top.zibin:Luban2:1.0.9'
 ```
 
 #Release Notes
@@ -50,7 +50,6 @@ compile 'top.zibin:Luban:1.0.9'
 ```java
 Luban.get(this)
     .load(File)                     //传人要压缩的图片
-    .putGear(Luban.THIRD_GEAR)      //设定压缩档次，默认三挡
     .setCompressListener(new OnCompressListener() { //设置回调
 
         @Override
@@ -76,7 +75,6 @@ Luban.get(this)
 ```java
 Luban.get(this)
         .load(file)
-        .putGear(Luban.THIRD_GEAR)
         .asObservable()
         .subscribeOn(Schedulers.io())
         .observeOn(AndroidSchedulers.mainThread())
