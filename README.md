@@ -29,10 +29,10 @@
 #导入
 
 ```sh
-compile 'io.reactivex:rxandroid:1.2.1'
-compile 'io.reactivex:rxjava:1.1.6'
+compile 'io.reactivex:rxandroid:2.0.1'
+compile 'io.reactivex:rxjava:2.0.1'
 
-compile 'top.zibin:Luban:1.0.9'
+compile 'top.zibin:Luban2:1.0.9'
 ```
 
 #Release Notes
@@ -50,7 +50,6 @@ compile 'top.zibin:Luban:1.0.9'
 ```java
 Luban.get(this)
     .load(File)                     //传人要压缩的图片
-    .putGear(Luban.THIRD_GEAR)      //设定压缩档次，默认三挡
     .setCompressListener(new OnCompressListener() { //设置回调
 
         @Override
@@ -75,29 +74,28 @@ Luban.get(this)
 
 ```java
 Luban.get(this)
-        .load(file)
-        .putGear(Luban.THIRD_GEAR)
-        .asObservable()
-        .subscribeOn(Schedulers.io())
-        .observeOn(AndroidSchedulers.mainThread())
-        .doOnError(new Action1<Throwable>() {
-            @Override
-            public void call(Throwable throwable) {
-                throwable.printStackTrace();
-            }
-        })
-        .onErrorResumeNext(new Func1<Throwable, Observable<? extends File>>() {
-            @Override
-            public Observable<? extends File> call(Throwable throwable) {
-                return Observable.empty();
-            }
-        })
-        .subscribe(new Action1<File>() {
-            @Override
-            public void call(File file) {
-                // TODO 压缩成功后调用，返回压缩后的图片文件
-            }
-        }).launch();    //启动压缩
+    .load(file)
+    .asObservable()
+    .subscribeOn(Schedulers.io())
+    .observeOn(AndroidSchedulers.mainThread())
+    .doOnError(new Consumer<Throwable>() {
+        @Override
+        public void accept(Throwable throwable) throws Exception {
+            throwable.printStackTrace();
+        }
+    })
+    .onErrorResumeNext(new Function<Throwable, ObservableSource<? extends File>>() {
+        @Override
+        public ObservableSource<? extends File> apply(Throwable throwable) throws Exception {
+            return Observable.empty();
+        }
+    })
+    .subscribe(new Consumer<File>() {
+        @Override
+        public void accept(File file) throws Exception {
+            // TODO 压缩成功后调用，返回压缩后的图片文件
+        }
+    });     //启动压缩
 ```
 
 ###方法对应表
