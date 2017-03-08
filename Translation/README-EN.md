@@ -28,10 +28,10 @@ Extended screenshot|1080*6433,1.56M|1080*6433,351k|1080*6433,482k
 # Setup
 
 ```sh
-compile 'io.reactivex:rxandroid:1.2.1'
-compile 'io.reactivex:rxjava:1.1.6'
+compile 'io.reactivex:rxandroid:2.0.1'
+compile 'io.reactivex:rxjava:2.0.1'
 
-compile 'top.zibin:Luban:1.0.8'
+compile 'top.zibin:Luban:1.0.9'
 ```
 
 # Usage
@@ -41,7 +41,6 @@ compile 'top.zibin:Luban:1.0.8'
 ```java
 Luban.get(this)
     .load(File)                     // pass image to be compressed
-    .putGear(Luban.THIRD_GEAR)      // set compression level, defaults to 3
     .setCompressListener(new OnCompressListener() { // Set up return
     
         @Override
@@ -65,27 +64,26 @@ Luban.get(this)
 With `RxJava`, more freedom is left to the programmer on controlling the process. 
 
 ```java
-Luban.get(this)
+ Luban.get(this)
         .load(file)
-        .putGear(Luban.THIRD_GEAR)
         .asObservable()
         .subscribeOn(Schedulers.io())
         .observeOn(AndroidSchedulers.mainThread())
-        .doOnError(new Action1<Throwable>() {
+        .doOnError(new Consumer<Throwable>() {
             @Override
-            public void call(Throwable throwable) {
+            public void accept(Throwable throwable) throws Exception {
                 throwable.printStackTrace();
             }
         })
-        .onErrorResumeNext(new Func1<Throwable, Observable<? extends File>>() {
+        .onErrorResumeNext(new Function<Throwable, ObservableSource<? extends File>>() {
             @Override
-            public Observable<? extends File> call(Throwable throwable) {
+            public ObservableSource<? extends File> apply(Throwable throwable) throws Exception {
                 return Observable.empty();
             }
         })
-        .subscribe(new Action1<File>() {
+        .subscribe(new Consumer<File>() {
             @Override
-            public void call(File file) {
+            public void accept(File file) throws Exception {
                 // TODO called when compression finishes successfully, provides compressed image
             }
         });
