@@ -1,5 +1,14 @@
 apply plugin: 'com.android.library'
 
+buildscript {
+    repositories {
+        jcenter()
+    }
+    dependencies {
+        classpath 'com.jfrog.bintray.gradle:gradle-bintray-plugin:1.2'
+    }
+}
+
 android {
     compileSdkVersion 24
     buildToolsVersion '25.0.0'
@@ -26,3 +35,5 @@ dependencies {
     compile 'io.reactivex:rxjava:1.1.6'
     compile 'io.reactivex:rxandroid:1.1.0'
 }
+
+apply from: 'bintray.gradle'
