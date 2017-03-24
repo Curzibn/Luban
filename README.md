@@ -69,9 +69,9 @@ Luban.get(this)
     }).launch();    //启动压缩
 ```
 
-#### `RxJava`方式
+#### RxJava方式
 
-`RxJava`调用方式请自行随意控制线程：
+RxJava调用方式请自行随意控制线程：
 
 ```java
 Luban.get(this)
@@ -134,7 +134,7 @@ Luban.get(this)
 方法名|功能
 ---|---
 load(File file)|传入要压缩的文件
-load(List<File> fileList)|传入要压缩的多个文件
+load(`List<File>` fileList)|传入要压缩的多个文件
 setFilename(String filename)|设置压缩后图片命名
 putGear(int gear)|设置压缩档次
 
