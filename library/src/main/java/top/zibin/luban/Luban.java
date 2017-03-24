@@ -13,6 +13,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.util.List;
 
 import rx.Observable;
 import rx.android.schedulers.AndroidSchedulers;
@@ -36,6 +37,7 @@ public class Luban {
 
     private OnCompressListener compressListener;
     private File mFile;
+    private List<File> mFileList;
     private int gear = THIRD_GEAR;
     private String filename;
 
@@ -161,6 +163,11 @@ public class Luban {
         return this;
     }
 
+    public Luban load(List<File> filePath) {
+        mFileList = filePath;
+        return this;
+    }
+
     public Luban setCompressListener(OnCompressListener listener) {
         compressListener = listener;
         return this;
@@ -194,6 +201,34 @@ public class Luban {
                     return thirdCompress(file);
                 }
             });
+        else return Observable.empty();
+    }
+
+    public Observable<List<File>> asList() {
+        if (gear == FIRST_GEAR)
+            return Observable.from(mFileList).concatMap(new Func1<File, Observable<File>>() {
+                @Override
+                public Observable<File> call(File file) {
+                    return Observable.just(file).map(new Func1<File, File>() {
+                        @Override
+                        public File call(File file) {
+                            return firstCompress(file);
+                        }
+                    });
+                }
+            }).toList();
+        else if (gear == THIRD_GEAR)
+            return Observable.from(mFileList).concatMap(new Func1<File, Observable<File>>() {
+                @Override
+                public Observable<File> call(File file) {
+                    return Observable.just(file).map(new Func1<File, File>() {
+                        @Override
+                        public File call(File file) {
+                            return thirdCompress(file);
+                        }
+                    });
+                }
+            }).toList();
         else return Observable.empty();
     }
 
