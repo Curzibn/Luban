@@ -6,7 +6,7 @@
 
 `Luban` is an image compressing tool for android with efficacy very close to that of `WeChat` Moments.
 
-# Description
+### Description
 
 With mobile development, showing images in an app has become a very frequent task.
 But with the ever increasing resolution of smartphone cameras, image compression has become a rather important concern.
@@ -15,7 +15,7 @@ Although there are already a lot of writings on the internet on the topic, a gre
 Naturally, the first idea was to see how the `WeChat`, the app giant manages this task in action. To gather data, 100 images with different resolutions were sent through `WeChat` Moments, then the compressed images were compared with the original ones. `Luban`'s foundation is the result of this analysis on `WeChat`'s compression method.
 Because the process was analyzed backwards, `Luban`'s efficacy is not yet exactly the same as that of `WeChat`, but the results are already very close to what `WeChat` Moments' image compression produces - see the concrete comparison below.
 
-# Efficacy with comparison to other tools
+### Efficacy with comparison to other tools
 
 Content | Original picture | `Luban` | `Wechat`
 ------- | ---------------- | ------- | --------
@@ -25,17 +25,25 @@ Content | Original picture | `Luban` | `Wechat`
 9.6M photo (16:9)|4128*2322,4.64M|1032*581,97k|1032*581,74k
 Extended screenshot|1080*6433,1.56M|1080*6433,351k|1080*6433,482k
 
-# Setup
+### Setup
+
+```sh
+allprojects {
+    repositories {
+        ...
+        maven { url 'https://jitpack.io' }
+    }
+}
+```
 
 ```sh
 compile 'io.reactivex:rxandroid:1.2.1'
 compile 'io.reactivex:rxjava:1.1.6'
-
-compile 'top.zibin:Luban:1.0.8'
+compile 'com.github.XConstantine:Luban:1.1.0'
 ```
 
-# Usage
-### Via a Listener
+### Usage
+#### Via a Listener
 `Luban` internally uses the `IO` thread to perform image compression, implementations only need to specify what happens when the process finishes successfully.
 
 ```java
@@ -60,7 +68,7 @@ Luban.get(this)
     }).launch();    // Start compression
 ```
 
-### With `RxJava`
+#### With `RxJava`
 
 With `RxJava`, more freedom is left to the programmer on controlling the process. 
 
@@ -91,7 +99,7 @@ Luban.get(this)
         });
 ```
 
-### Compress multi image
+#### Compress multi image
 
 ```java
 Luban.get(this)
@@ -120,7 +128,7 @@ Luban.get(this)
         });
 ```
 
-# License
+### License
 
     Copyright 2016 Zheng Zibin
     
