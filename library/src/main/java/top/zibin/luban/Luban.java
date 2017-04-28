@@ -406,7 +406,7 @@ public class Luban {
 
         thbBitmap = rotatingImage(angle, thbBitmap);
 
-        return saveImage(thumbFilePath, thbBitmap, size);
+        return saveImageBinarysearch(thumbFilePath, thbBitmap, size);
     }
 
     /**
@@ -461,6 +461,57 @@ public class Luban {
             e.printStackTrace();
         }
 
+        return new File(filePath);
+    }
+
+    /**
+     * 保存图片到指定路径，使用折半查找算法
+     * Save image with specified size
+     *
+     * @param filePath the image file save path 储存路径
+     * @param bitmap   the image what be save   目标图片
+     * @param size     the file size of image   期望大小
+     */
+    private File saveImageBinarysearch(String filePath, Bitmap bitmap, long size) {
+        checkNotNull(bitmap, TAG + "bitmap cannot be null");
+
+        File result = new File(filePath.substring(0, filePath.lastIndexOf("/")));
+
+        if (!result.exists() && !result.mkdirs()) return null;
+
+        ByteArrayOutputStream stream = new ByteArrayOutputStream();
+        long intervalTop = size + size/3;
+        long intervalLow = size - size/3;
+        int mid,low,top;
+        top = 100;
+        low = 0;
+        mid = (top + low) / 2;
+        boolean flag = true;
+        while (low + 1 < top && flag && mid > 2 ) {
+            stream.reset();
+            bitmap.compress(Bitmap.CompressFormat.JPEG, mid, stream);
+
+            if (stream.toByteArray().length / 1024 > intervalTop) {
+                top = mid;
+                mid = (top + low) / 2;
+            } else if (stream.toByteArray().length / 1024 < intervalLow) {
+                low = mid;
+                mid = (top + low) / 2;
+            } else {
+                flag = false;
+            }
+        }
+
+        bitmap.recycle();
+        try {
+            FileOutputStream fos = new FileOutputStream(filePath);
+            fos.write(stream.toByteArray());
+            fos.flush();
+            fos.close();
+            stream.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
         return new File(filePath);
     }
 }
