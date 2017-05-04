@@ -91,6 +91,35 @@ Luban.get(this)
         });
 ```
 
+### Compress multi image
+
+```java
+Luban.get(this)
+        .load(fileList)
+        .putGear(Luban.THIRD_GEAR)
+        .asList()
+        .subscribeOn(Schedulers.io())
+        .observeOn(AndroidSchedulers.mainThread())
+        .doOnError(new Action1<Throwable>() {
+            @Override
+            public void call(Throwable throwable) {
+                throwable.printStackTrace();
+            }
+        })
+        .onErrorResumeNext(new Func1<Throwable, Observable<? extends List<File>>>() {
+            @Override
+            public Observable<? extends List<File>> call(Throwable throwable) {
+                return Observable.empty();
+            }
+        })
+        .subscribe(new Action1<List<File>>() {
+            @Override
+            public void call(List<File> fileList) {
+                  // TODO Called when compression finishes successfully, provides compressed images
+            }
+        });
+```
+
 # License
 
     Copyright 2016 Zheng Zibin
