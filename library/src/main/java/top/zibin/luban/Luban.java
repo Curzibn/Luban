@@ -14,11 +14,12 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 
-import rx.Observable;
-import rx.android.schedulers.AndroidSchedulers;
-import rx.functions.Action1;
-import rx.functions.Func1;
-import rx.schedulers.Schedulers;
+import io.reactivex.Observable;
+import io.reactivex.android.schedulers.AndroidSchedulers;
+import io.reactivex.functions.Consumer;
+import io.reactivex.functions.Function;
+import io.reactivex.functions.Predicate;
+import io.reactivex.schedulers.Schedulers;
 
 import static top.zibin.luban.Preconditions.checkNotNull;
 
@@ -96,59 +97,59 @@ public class Luban {
 
         if (gear == Luban.FIRST_GEAR)
             Observable.just(mFile)
-                    .map(new Func1<File, File>() {
+                    .map(new Function<File, File>() {
                         @Override
-                        public File call(File file) {
+                        public File apply(@io.reactivex.annotations.NonNull File file) throws Exception {
                             return firstCompress(file);
                         }
                     })
                     .subscribeOn(Schedulers.io())
                     .observeOn(AndroidSchedulers.mainThread())
-                    .doOnError(new Action1<Throwable>() {
+                    .doOnError(new Consumer<Throwable>() {
                         @Override
-                        public void call(Throwable throwable) {
+                        public void accept(@io.reactivex.annotations.NonNull Throwable throwable) throws Exception {
                             if (compressListener != null) compressListener.onError(throwable);
                         }
                     })
                     .onErrorResumeNext(Observable.<File>empty())
-                    .filter(new Func1<File, Boolean>() {
+                    .filter(new Predicate<File>() {
                         @Override
-                        public Boolean call(File file) {
+                        public boolean test(@io.reactivex.annotations.NonNull File file) throws Exception {
                             return file != null;
                         }
                     })
-                    .subscribe(new Action1<File>() {
+                    .subscribe(new Consumer<File>() {
                         @Override
-                        public void call(File file) {
+                        public void accept(@io.reactivex.annotations.NonNull File file) throws Exception {
                             if (compressListener != null) compressListener.onSuccess(file);
                         }
                     });
         else if (gear == Luban.THIRD_GEAR)
             Observable.just(mFile)
-                    .map(new Func1<File, File>() {
+                    .map(new Function<File, File>() {
                         @Override
-                        public File call(File file) {
+                        public File apply(@io.reactivex.annotations.NonNull File file) throws Exception {
                             return thirdCompress(file);
                         }
                     })
                     .subscribeOn(Schedulers.io())
                     .observeOn(AndroidSchedulers.mainThread())
-                    .doOnError(new Action1<Throwable>() {
+                    .doOnError(new Consumer<Throwable>() {
                         @Override
-                        public void call(Throwable throwable) {
+                        public void accept(@io.reactivex.annotations.NonNull Throwable throwable) throws Exception {
                             if (compressListener != null) compressListener.onError(throwable);
                         }
                     })
                     .onErrorResumeNext(Observable.<File>empty())
-                    .filter(new Func1<File, Boolean>() {
+                    .filter(new Predicate<File>() {
                         @Override
-                        public Boolean call(File file) {
+                        public boolean test(@io.reactivex.annotations.NonNull File file) throws Exception {
                             return file != null;
                         }
                     })
-                    .subscribe(new Action1<File>() {
+                    .subscribe(new Consumer<File>() {
                         @Override
-                        public void call(File file) {
+                        public void accept(@io.reactivex.annotations.NonNull File file) throws Exception {
                             if (compressListener != null) compressListener.onSuccess(file);
                         }
                     });
@@ -181,16 +182,16 @@ public class Luban {
 
     public Observable<File> asObservable() {
         if (gear == FIRST_GEAR)
-            return Observable.just(mFile).map(new Func1<File, File>() {
+            return Observable.just(mFile).map(new Function<File, File>() {
                 @Override
-                public File call(File file) {
+                public File apply(@io.reactivex.annotations.NonNull File file) throws Exception {
                     return firstCompress(file);
                 }
             });
         else if (gear == THIRD_GEAR)
-            return Observable.just(mFile).map(new Func1<File, File>() {
+            return Observable.just(mFile).map(new Function<File, File>() {
                 @Override
-                public File call(File file) {
+                public File apply(@io.reactivex.annotations.NonNull File file) throws Exception {
                     return thirdCompress(file);
                 }
             });

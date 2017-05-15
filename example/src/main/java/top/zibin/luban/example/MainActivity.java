@@ -17,12 +17,14 @@ import com.bumptech.glide.Glide;
 import java.io.File;
 import java.util.ArrayList;
 
+import io.reactivex.Observable;
+import io.reactivex.ObservableSource;
+import io.reactivex.android.schedulers.AndroidSchedulers;
+import io.reactivex.annotations.NonNull;
+import io.reactivex.functions.Consumer;
+import io.reactivex.functions.Function;
+import io.reactivex.schedulers.Schedulers;
 import me.iwf.photopicker.PhotoPicker;
-import rx.Observable;
-import rx.android.schedulers.AndroidSchedulers;
-import rx.functions.Action1;
-import rx.functions.Func1;
-import rx.schedulers.Schedulers;
 import top.zibin.luban.Luban;
 import top.zibin.luban.OnCompressListener;
 
@@ -103,21 +105,21 @@ public class MainActivity extends AppCompatActivity {
                 .asObservable()
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
-                .doOnError(new Action1<Throwable>() {
+                .doOnError(new Consumer<Throwable>() {
                     @Override
-                    public void call(Throwable throwable) {
+                    public void accept(@NonNull Throwable throwable) throws Exception {
                         throwable.printStackTrace();
                     }
                 })
-                .onErrorResumeNext(new Func1<Throwable, Observable<? extends File>>() {
+                .onErrorResumeNext(new Function<Throwable, ObservableSource<? extends File>>() {
                     @Override
-                    public Observable<? extends File> call(Throwable throwable) {
+                    public ObservableSource<? extends File> apply(@NonNull Throwable throwable) throws Exception {
                         return Observable.empty();
                     }
                 })
-                .subscribe(new Action1<File>() {
+                .subscribe(new Consumer<File>() {
                     @Override
-                    public void call(File file) {
+                    public void accept(@NonNull File file) throws Exception {
                         Glide.with(MainActivity.this).load(file).into(image);
 
                         Intent intent = new Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE);
