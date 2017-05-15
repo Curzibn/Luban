@@ -44,7 +44,10 @@ def gitUrl = 'https://github.com/xiongke15117937934/Luban.git'   //Git仓库的�
 
 group = "com.github.xiongke"//发布aar前缀根节点
 
-version = "2.0"//发布aar的库版本
+version = "2.1"//发布aar的库版本
+ext{
+    bintrayName = 'LuBan'
+}
 
 android {
     compileSdkVersion 25
