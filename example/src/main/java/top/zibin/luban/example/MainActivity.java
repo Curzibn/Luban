@@ -145,6 +145,13 @@ public class MainActivity extends AppCompatActivity {
 
                 for (int i = 0; i < photos.size(); i++)
                     compressWithLs(new File(photos.get(i)));
+                //防止压缩重名呀
+                  try {
+                        Thread.sleep(10);
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
+
             }
         }
     }
