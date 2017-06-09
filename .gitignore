@@ -1,15 +1,5 @@
 *.iml
 .gradle
 /local.properties
-/.idea/workspace.xml
-/.idea/libraries
-.DS_Store
+/.idea
 /build
-/captures
-.idea/misc.xml
-vcs.xml
-
-.idea/misc.xml
-libs/
-src/main/res/drawable/
-.idea

@@ -20,8 +20,6 @@ import rx.functions.Action1;
 import rx.functions.Func1;
 import rx.schedulers.Schedulers;
 
-import static top.zibin.luban.Preconditions.checkNotNull;
-
 public class LubanOld {
 
   private static final int FIRST_GEAR = 1;
@@ -97,7 +95,6 @@ public class LubanOld {
   }
 
   public LubanOld launch() {
-    checkNotNull(mFile, "the image file cannot be null, please call .load() before this method!");
 
     if (compressListener != null) compressListener.onStart();
 
@@ -458,8 +455,6 @@ public class LubanOld {
    *     the file size of image   期望大小
    */
   private File saveImage(String filePath, Bitmap bitmap, long size) {
-    checkNotNull(bitmap, TAG + "bitmap cannot be null");
-
     File result = new File(filePath.substring(0, filePath.lastIndexOf("/")));
 
     if (!result.exists() && !result.mkdirs()) return null;
