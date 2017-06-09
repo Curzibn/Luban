@@ -2,9 +2,7 @@ package top.zibin.luban.example;
 
 import android.content.Intent;
 import android.graphics.BitmapFactory;
-import android.net.Uri;
 import android.os.Bundle;
-import android.support.design.widget.FloatingActionButton;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
@@ -20,13 +18,7 @@ import java.io.File;
 import java.util.ArrayList;
 
 import me.iwf.photopicker.PhotoPicker;
-import rx.Observable;
-import rx.android.schedulers.AndroidSchedulers;
-import rx.functions.Action1;
-import rx.functions.Func1;
-import rx.schedulers.Schedulers;
 import top.zibin.luban.Luban;
-import top.zibin.luban.LubanOld;
 import top.zibin.luban.OnCompressListener;
 
 public class MainActivity extends AppCompatActivity {
