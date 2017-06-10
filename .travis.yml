@@ -1,10 +1,6 @@
 language: android
 
-machine:
-java:
-version: openjdk8  <--- HERE
-environment:
-ANDROID_HOME: /usr/local/android-sdk-linux
+jdk: oraclejdk8
 
 notifications:
   email: false
