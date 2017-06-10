@@ -1,5 +1,9 @@
 language: android
 
+machine:
+java:
+version: openjdk8  <--- HERE
+
 notifications:
   email: false
 
