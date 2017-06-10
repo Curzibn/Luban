@@ -31,7 +31,7 @@
 # 导入
 
 ```sh
-compile 'top.zibin:Luban:1.0.9'
+compile 'top.zibin:Luban:1.1.0'
 ```
 
 # Release Notes
