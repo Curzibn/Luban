@@ -2,7 +2,7 @@
 
 [![Build Status](https://travis-ci.org/Curzibn/Luban.svg?branch=master)](https://travis-ci.org/Curzibn/Luban)
 
-<div align="right">
+<div align="lift">
 <a href="Translation/README-EN.md">:book: English Documentation</a>
 </div>
 
