@@ -29,9 +29,6 @@
 # 导入
 
 ```sh
-compile 'io.reactivex:rxandroid:1.2.1'
-compile 'io.reactivex:rxjava:1.1.6'
-
 compile 'top.zibin:Luban:1.0.9'
 ```
 
