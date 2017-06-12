@@ -1,6 +1,7 @@
 # Luban
 
 [![Build Status](https://travis-ci.org/Curzibn/Luban.svg?branch=master)](https://travis-ci.org/Curzibn/Luban)
+[ ![Download](https://api.bintray.com/packages/curzibn/maven/Luban/images/download.svg) ](https://bintray.com/curzibn/maven/Luban/_latestVersion)
 
 <div align="right">
 <a href="Translation/README-EN.md">:book: English Documentation</a>
