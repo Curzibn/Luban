@@ -6,6 +6,7 @@ import android.os.Looper;
 import android.os.Message;
 import android.support.annotation.Nullable;
 import android.support.annotation.UiThread;
+import android.support.annotation.WorkerThread;
 import android.util.Log;
 
 import java.io.File;
@@ -30,7 +31,7 @@ public class Luban implements Handler.Callback {
     mHandler = new Handler(Looper.getMainLooper(), this);
   }
 
-  public static Builder get(Context context) {
+  public static Builder with(Context context) {
     return new Builder(context);
   }
 
@@ -42,7 +43,7 @@ public class Luban implements Handler.Callback {
    */
   private File getImageCacheFile(Context context) {
     if (getImageCacheDir(context) != null) {
-      return new File(getImageCacheDir(context) + "/" + System.currentTimeMillis());
+      return new File(getImageCacheDir(context) + "/" + System.currentTimeMillis() + (int) (Math.random() * 100));
     }
     return null;
   }
@@ -54,7 +55,7 @@ public class Luban implements Handler.Callback {
    * @param context
    *     A context.
    *
-   * @see #getImageCacheDir(android.content.Context, String)
+   * @see #getImageCacheDir(Context, String)
    */
   @Nullable
   private File getImageCacheDir(Context context) {
@@ -70,7 +71,7 @@ public class Luban implements Handler.Callback {
    * @param cacheName
    *     The name of the subdirectory in which to store the cache.
    *
-   * @see #getImageCacheDir(android.content.Context)
+   * @see #getImageCacheDir(Context)
    */
   @Nullable
   private File getImageCacheDir(Context context, String cacheName) {
@@ -89,6 +90,9 @@ public class Luban implements Handler.Callback {
     return null;
   }
 
+  /**
+   * start asynchronous compress thread
+   */
   @UiThread private void launch(final Context context) {
     if (file == null && onCompressListener != null) {
       onCompressListener.onError(new NullPointerException("image file cannot be null"));
@@ -106,6 +110,13 @@ public class Luban implements Handler.Callback {
         }
       }
     }).start();
+  }
+
+  /**
+   * start compress and return the file
+   */
+  @WorkerThread private File get(final Context context) throws IOException {
+    return new Engine(file, getImageCacheFile(context)).compress();
   }
 
   @Override public boolean handleMessage(Message msg) {
@@ -152,10 +163,12 @@ public class Luban implements Handler.Callback {
       return this;
     }
 
-    public Luban launch() {
-      Luban luban = build();
-      luban.launch(context);
-      return luban;
+    public void launch() {
+      build().launch(context);
+    }
+
+    public File get() throws IOException {
+      return build().get(context);
     }
   }
 }

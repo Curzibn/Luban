@@ -21,7 +21,9 @@ class Engine {
   private int srcHeight;
 
   Engine(File srcImg, File tagImg) throws IOException {
-    this.srcExif = new ExifInterface(srcImg.getAbsolutePath());
+    if (isJpeg(srcImg)) {
+      this.srcExif = new ExifInterface(srcImg.getAbsolutePath());
+    }
     this.tagImg = tagImg;
     this.srcImg = srcImg;
 
@@ -32,6 +34,10 @@ class Engine {
     BitmapFactory.decodeFile(srcImg.getAbsolutePath(), options);
     this.srcWidth = options.outWidth;
     this.srcHeight = options.outHeight;
+  }
+
+  private boolean isJpeg(File photo) {
+    return photo.getAbsolutePath().contains("jpeg") || photo.getAbsolutePath().contains("jpg");
   }
 
   private int computeSize() {
@@ -65,6 +71,8 @@ class Engine {
   }
 
   private Bitmap rotatingImage(Bitmap bitmap) {
+    if (srcExif == null) return bitmap;
+
     Matrix matrix = new Matrix();
     int angle = 0;
     int orientation = srcExif.getAttributeInt(ExifInterface.TAG_ORIENTATION, ExifInterface.ORIENTATION_NORMAL);

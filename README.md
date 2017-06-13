@@ -37,22 +37,25 @@ compile 'top.zibin:Luban:1.1.0'
 
 # Release Notes
 
+### [v1.1.1, 2017/6/13](https://github.com/Curzibn/Luban/milestone/1)
+
+- 修改压缩方式，压缩速度更快、压缩质量更换
+- 去掉rxJava依赖，提供同步压缩方法
+
 ### [v1.0.9, 2016/10/14](https://github.com/Curzibn/Luban/milestone/1)
 
 - 修改压缩后文件自带后缀，根据([#77](https://github.com/Curzibn/Luban/issues/77))提供的思路
 
 # 使用
 
-### Listener方式
+### 异步调用
 
 `Luban`内部采用`IO`线程进行图片压缩，外部调用只需设置好结果监听即可：
 
 ```java
-Luban.get(this)
+Luban.with(this)
     .load(File)                     //传人要压缩的图片
-    .putGear(Luban.THIRD_GEAR)      //设定压缩档次，默认三挡
     .setCompressListener(new OnCompressListener() { //设置回调
-
         @Override
         public void onStart() {
             // TODO 压缩开始前调用，可以在方法内启动 loading UI
@@ -64,9 +67,26 @@ Luban.get(this)
 
         @Override
         public void onError(Throwable e) {
-            // TODO 当压缩过去出现问题时调用
+            // TODO 当压缩过程出现问题时调用
         }
     }).launch();    //启动压缩
+```
+
+### 同步调用
+
+同步方法请尽量避免在主线程调用以免阻塞主线程，下面以rxJava调用为例
+
+```java
+Flowable.just(file)
+    .observeOn(Schedulers.io())
+    .map(new Function<File, File>() {
+      @Override public File apply(@NonNull File file) throws Exception {
+        // 同步方法直接返回压缩后的文件
+        return Luban.with(MainActivity.this).load(file).get();
+      }
+    })
+    .observeOn(AndroidSchedulers.mainThread())
+    .subscribe();
 ```
 
 # License
