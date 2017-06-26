@@ -32,19 +32,8 @@
 # 导入
 
 ```sh
-compile 'top.zibin:Luban:1.1.1'
+compile 'top.zibin:Luban:1.1.2'
 ```
-
-# Release Notes
-
-### [v1.1.1, 2017/6/13](https://github.com/Curzibn/Luban/milestone/1)
-
-- 修改压缩方式，压缩速度更快、压缩质量更换
-- 去掉rxJava依赖，提供同步压缩方法
-
-### [v1.0.9, 2016/10/14](https://github.com/Curzibn/Luban/milestone/1)
-
-- 修改压缩后文件自带后缀，根据([#77](https://github.com/Curzibn/Luban/issues/77))提供的思路
 
 # 使用
 
