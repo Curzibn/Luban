@@ -43,7 +43,7 @@ public class Luban implements Handler.Callback {
    */
   private File getImageCacheFile(Context context) {
     if (getImageCacheDir(context) != null) {
-      return new File(getImageCacheDir(context) + "/" + System.currentTimeMillis() + (int) (Math.random() * 100));
+      return new File(getImageCacheDir(context) + "/" + System.currentTimeMillis() + (int) (Math.random() * 1000) + ".jpg");
     }
     return null;
   }
