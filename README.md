@@ -37,6 +37,48 @@ compile 'top.zibin:Luban:1.1.2'
 
 # 使用
 
+# 注意事项：多图压缩请使用异步队列的方式，粗暴的遍历压缩出现图片重复，是线程同步不安全造成的！！！
+ 正确的姿势如下：
+   private List<File> files;
+ /**
+     * 递归上传多图
+     *
+     * @param images
+     */
+    public void post(final List<String> images, final Handler handler) {
+        if (images == null || handler == null) {
+            return;
+        }
+        final int size = images.size();
+        if (files == null) {
+            files = new ArrayList<>(size);
+        }
+        //判断图片压缩是否已操作结束
+        if (size > 0) {
+            ImageCompressUtils.from(mContext)
+                    .load(images.get(0))
+                    .execute(new ImageCompressUtils.OnCompressListener() {
+                        @Override
+                        public void onSuccess(File file) {
+                            files.add(file);
+                            if (images.size() > 0) {
+                                images.remove(0);
+                            }
+                            post(images, handler);
+                        }
+
+                        @Override
+                        public void onError(Throwable e) {
+                            //暂时不处理
+                            handler.sendEmptyMessage(PROCESS_ERROR);
+                        }
+                    });
+        } else {
+            //压缩结束
+            handler.obtainMessage(PROCESS_SUCCESS, files).sendToTarget();
+        }
+    }
+
 ### 异步调用
 
 `Luban`内部采用`IO`线程进行图片压缩，外部调用只需设置好结果监听即可：
