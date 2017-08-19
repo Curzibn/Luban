@@ -76,7 +76,7 @@ public class MainActivity extends AppCompatActivity {
         fileSize.setText(imgFile.length() / 1024 + "k");
         imageSize.setText(computeSize(imgFile)[0] + "*" + computeSize(imgFile)[1]);
 
-        compressWithRx(photos);
+        compressWithLs(photos);
       }
     }
   }

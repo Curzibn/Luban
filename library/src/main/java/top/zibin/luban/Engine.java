@@ -84,6 +84,7 @@ class Engine {
   }
 
   File compress() throws IOException {
+    long begin = SystemClock.elapsedRealtime();
     BitmapFactory.Options options = new BitmapFactory.Options();
     options.inSampleSize = computeSize();
 
@@ -99,6 +100,10 @@ class Engine {
     fos.flush();
     fos.close();
     stream.close();
+
+    long end = SystemClock.elapsedRealtime();
+    long elapsed = end - begin;
+    Log.d("Engine", "the compression time is " + elapsed);
 
     return tagImg;
   }

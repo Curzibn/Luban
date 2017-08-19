@@ -106,7 +106,7 @@ public class Luban implements Handler.Callback {
     while (iterator.hasNext()) {
       final String path = iterator.next();
       if (Checker.isImage(path)) {
-        AsyncTask.THREAD_POOL_EXECUTOR.execute(new Runnable() {
+        AsyncTask.SERIAL_EXECUTOR.execute(new Runnable() {
           @Override public void run() {
             try {
               mHandler.sendMessage(mHandler.obtainMessage(MSG_COMPRESS_START));
