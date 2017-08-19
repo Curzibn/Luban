@@ -1,6 +1,7 @@
 package top.zibin.luban;
 
 import android.content.Context;
+import android.os.AsyncTask;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.Message;
@@ -11,6 +12,9 @@ import android.util.Log;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
 
 public class Luban implements Handler.Callback {
   private static final String TAG = "Luban";
@@ -20,13 +24,13 @@ public class Luban implements Handler.Callback {
   private static final int MSG_COMPRESS_START = 1;
   private static final int MSG_COMPRESS_ERROR = 2;
 
-  private File file;
+  private List<String> mPaths;
   private OnCompressListener onCompressListener;
 
   private Handler mHandler;
 
   private Luban(Builder builder) {
-    this.file = builder.file;
+    this.mPaths = builder.mPaths;
     this.onCompressListener = builder.onCompressListener;
     mHandler = new Handler(Looper.getMainLooper(), this);
   }
@@ -36,7 +40,7 @@ public class Luban implements Handler.Callback {
   }
 
   /**
-   * Returns a file with a cache audio name in the private cache directory.
+   * Returns a mFile with a cache audio name in the private cache directory.
    *
    * @param context
    *     A context.
@@ -94,29 +98,53 @@ public class Luban implements Handler.Callback {
    * start asynchronous compress thread
    */
   @UiThread private void launch(final Context context) {
-    if (file == null && onCompressListener != null) {
+    if (mPaths == null || mPaths.size() == 0 && onCompressListener != null) {
       onCompressListener.onError(new NullPointerException("image file cannot be null"));
     }
 
-    new Thread(new Runnable() {
-      @Override public void run() {
-        try {
-          mHandler.sendMessage(mHandler.obtainMessage(MSG_COMPRESS_START));
+    Iterator<String> iterator = mPaths.iterator();
+    while (iterator.hasNext()) {
+      final String path = iterator.next();
+      if (Checker.isImage(path)) {
+        AsyncTask.THREAD_POOL_EXECUTOR.execute(new Runnable() {
+          @Override public void run() {
+            try {
+              mHandler.sendMessage(mHandler.obtainMessage(MSG_COMPRESS_START));
 
-          File result = new Engine(file, getImageCacheFile(context)).compress();
-          mHandler.sendMessage(mHandler.obtainMessage(MSG_COMPRESS_SUCCESS, result));
-        } catch (IOException e) {
-          mHandler.sendMessage(mHandler.obtainMessage(MSG_COMPRESS_ERROR, e));
-        }
+              File result = new Engine(path, getImageCacheFile(context)).compress();
+              mHandler.sendMessage(mHandler.obtainMessage(MSG_COMPRESS_SUCCESS, result));
+            } catch (IOException e) {
+              mHandler.sendMessage(mHandler.obtainMessage(MSG_COMPRESS_ERROR, e));
+            }
+          }
+        });
+      } else {
+        Log.e(TAG, "can not read the path : " + path);
       }
-    }).start();
+      iterator.remove();
+    }
   }
 
   /**
-   * start compress and return the file
+   * start compress and return the mFile
    */
-  @WorkerThread private File get(final Context context) throws IOException {
-    return new Engine(file, getImageCacheFile(context)).compress();
+  @WorkerThread private File get(String path, Context context) throws IOException {
+    return new Engine(path, getImageCacheFile(context)).compress();
+  }
+
+  @WorkerThread private List<File> get(Context context) throws IOException {
+    List<File> results = new ArrayList<>();
+    Iterator<String> iterator = mPaths.iterator();
+
+    while (iterator.hasNext()) {
+      String path = iterator.next();
+      if (Checker.isImage(path)) {
+        results.add(new Engine(path, getImageCacheFile(context)).compress());
+      }
+      iterator.remove();
+    }
+
+    return results;
   }
 
   @Override public boolean handleMessage(Message msg) {
@@ -138,11 +166,12 @@ public class Luban implements Handler.Callback {
 
   public static class Builder {
     private Context context;
-    private File file;
+    private List<String> mPaths;
     private OnCompressListener onCompressListener;
 
     Builder(Context context) {
       this.context = context;
+      this.mPaths = new ArrayList<>();
     }
 
     private Luban build() {
@@ -150,7 +179,17 @@ public class Luban implements Handler.Callback {
     }
 
     public Builder load(File file) {
-      this.file = file;
+      mPaths.add(file.getAbsolutePath());
+      return this;
+    }
+
+    public Builder load(String string) {
+      mPaths.add(string);
+      return this;
+    }
+
+    public Builder load(List<String> list) {
+      mPaths.addAll(list);
       return this;
     }
 
@@ -167,7 +206,11 @@ public class Luban implements Handler.Callback {
       build().launch(context);
     }
 
-    public File get() throws IOException {
+    public File get(String path) throws IOException {
+      return build().get(path, context);
+    }
+
+    public List<File> get() throws IOException {
       return build().get(context);
     }
   }

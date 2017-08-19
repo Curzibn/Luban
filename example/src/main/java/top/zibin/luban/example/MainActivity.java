@@ -16,6 +16,7 @@ import com.bumptech.glide.Glide;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.List;
 
 import io.reactivex.Flowable;
 import io.reactivex.android.schedulers.AndroidSchedulers;
@@ -54,7 +55,7 @@ public class MainActivity extends AppCompatActivity {
       @Override
       public void onClick(View view) {
         PhotoPicker.builder()
-            .setPhotoCount(5)
+            .setPhotoCount(9)
             .setShowCamera(true)
             .setShowGif(true)
             .setPreviewEnabled(false)
@@ -75,30 +76,28 @@ public class MainActivity extends AppCompatActivity {
         fileSize.setText(imgFile.length() / 1024 + "k");
         imageSize.setText(computeSize(imgFile)[0] + "*" + computeSize(imgFile)[1]);
 
-        for (String photo : photos) {
-          compressWithRx(new File(photo));
-        }
+        compressWithRx(photos);
       }
     }
   }
 
-  private void compressWithRx(File file) {
-    Flowable.just(file)
+  private void compressWithRx(List<String> photos) {
+    Flowable.just(photos)
         .observeOn(Schedulers.io())
-        .map(new Function<File, File>() {
-          @Override public File apply(@NonNull File file) throws Exception {
-            return Luban.with(MainActivity.this).load(file).get();
+        .map(new Function<List<String>, List<File>>() {
+          @Override public List<File> apply(@NonNull List<String> list) throws Exception {
+            return Luban.with(MainActivity.this).load(list).get();
           }
         })
         .observeOn(AndroidSchedulers.mainThread())
-        .subscribe(new Consumer<File>() {
-          @Override public void accept(@NonNull File file) throws Exception {
-            Log.d(TAG, file.getAbsolutePath());
+        .subscribe(new Consumer<List<File>>() {
+          @Override public void accept(@NonNull List<File> list) throws Exception {
+            for (File file : list) {
+              Glide.with(MainActivity.this).load(file).into(image);
 
-            Glide.with(MainActivity.this).load(file).into(image);
-
-            thumbFileSize.setText(file.length() / 1024 + "k");
-            thumbImageSize.setText(computeSize(file)[0] + "*" + computeSize(file)[1]);
+              thumbFileSize.setText(file.length() / 1024 + "k");
+              thumbImageSize.setText(computeSize(file)[0] + "*" + computeSize(file)[1]);
+            }
           }
         });
   }
@@ -106,9 +105,9 @@ public class MainActivity extends AppCompatActivity {
   /**
    * 压缩单张图片 Listener 方式
    */
-  private void compressWithLs(File file) {
+  private void compressWithLs(List<String> photos) {
     Luban.with(this)
-        .load(file)
+        .load(photos)
         .setCompressListener(new OnCompressListener() {
           @Override
           public void onStart() {
