@@ -35,7 +35,15 @@ public class Checker {
       return false;
     }
 
-    String suffix = path.substring(path.lastIndexOf("."), path.length());
+    String suffix = path.substring(path.lastIndexOf("."), path.length()).toLowerCase();
     return suffix.contains(JPG) || suffix.contains(JPEG);
+  }
+
+  static String checkSuffix(String path) {
+    if (TextUtils.isEmpty(path)) {
+      return ".jpg";
+    }
+
+    return path.substring(path.lastIndexOf("."), path.length());
   }
 }

@@ -8,6 +8,7 @@ import android.os.Message;
 import android.support.annotation.Nullable;
 import android.support.annotation.UiThread;
 import android.support.annotation.WorkerThread;
+import android.text.TextUtils;
 import android.util.Log;
 
 import java.io.File;
@@ -45,9 +46,11 @@ public class Luban implements Handler.Callback {
    * @param context
    *     A context.
    */
-  private File getImageCacheFile(Context context) {
+  private File getImageCacheFile(Context context, String suffix) {
+    suffix = TextUtils.isEmpty(suffix) ? ".jpg" : suffix;
+
     if (getImageCacheDir(context) != null) {
-      return new File(getImageCacheDir(context) + "/" + System.currentTimeMillis() + (int) (Math.random() * 1000) + ".jpg");
+      return new File(getImageCacheDir(context) + "/" + System.currentTimeMillis() + (int) (Math.random() * 1000) + suffix);
     }
     return null;
   }
@@ -111,7 +114,7 @@ public class Luban implements Handler.Callback {
             try {
               mHandler.sendMessage(mHandler.obtainMessage(MSG_COMPRESS_START));
 
-              File result = new Engine(path, getImageCacheFile(context)).compress();
+              File result = new Engine(path, getImageCacheFile(context, Checker.checkSuffix(path))).compress();
               mHandler.sendMessage(mHandler.obtainMessage(MSG_COMPRESS_SUCCESS, result));
             } catch (IOException e) {
               mHandler.sendMessage(mHandler.obtainMessage(MSG_COMPRESS_ERROR, e));
@@ -129,7 +132,7 @@ public class Luban implements Handler.Callback {
    * start compress and return the mFile
    */
   @WorkerThread private File get(String path, Context context) throws IOException {
-    return new Engine(path, getImageCacheFile(context)).compress();
+    return new Engine(path, getImageCacheFile(context, Checker.checkSuffix(path))).compress();
   }
 
   @WorkerThread private List<File> get(Context context) throws IOException {
@@ -139,7 +142,7 @@ public class Luban implements Handler.Callback {
     while (iterator.hasNext()) {
       String path = iterator.next();
       if (Checker.isImage(path)) {
-        results.add(new Engine(path, getImageCacheFile(context)).compress());
+        results.add(new Engine(path, getImageCacheFile(context, Checker.checkSuffix(path))).compress());
       }
       iterator.remove();
     }
