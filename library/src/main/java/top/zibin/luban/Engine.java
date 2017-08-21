@@ -4,8 +4,6 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Matrix;
 import android.media.ExifInterface;
-import android.os.SystemClock;
-import android.util.Log;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -42,21 +40,24 @@ class Engine {
     srcWidth = srcWidth % 2 == 1 ? srcWidth + 1 : srcWidth;
     srcHeight = srcHeight % 2 == 1 ? srcHeight + 1 : srcHeight;
 
-    if (srcWidth < srcHeight) {
-      return getInSampleSize(srcWidth);
-    } else {
-      return getInSampleSize(srcHeight);
-    }
-  }
+    int longSide = Math.max(srcWidth, srcHeight);
+    int shortSide = Math.min(srcWidth, srcHeight);
 
-  private int getInSampleSize(int i) {
-    float ratio = i / 1080;
-    if (ratio > 1.5f && ratio <= 3) {
-      return 1 << 1;
-    } else if (ratio > 3) {
-      return 1 << 2;
+    float scale = ((float) shortSide / longSide);
+    if (scale <= 1 && scale > 0.5625) {
+      if (longSide < 1664) {
+        return 1;
+      } else if (longSide >= 1664 && longSide < 4990) {
+        return 2;
+      } else if (longSide > 4990 && longSide < 10240) {
+        return 4;
+      } else {
+        return longSide / 1280 == 0 ? 1 : longSide / 1280;
+      }
+    } else if (scale <= 0.5625 && scale > 0.5) {
+      return longSide / 1280 == 0 ? 1 : longSide / 1280;
     } else {
-      return 1;
+      return (int) Math.ceil(longSide / (1280.0 / scale));
     }
   }
 
@@ -84,7 +85,6 @@ class Engine {
   }
 
   File compress() throws IOException {
-    long begin = SystemClock.elapsedRealtime();
     BitmapFactory.Options options = new BitmapFactory.Options();
     options.inSampleSize = computeSize();
 
@@ -92,7 +92,7 @@ class Engine {
     ByteArrayOutputStream stream = new ByteArrayOutputStream();
 
     tagBitmap = rotatingImage(tagBitmap);
-    tagBitmap.compress(Bitmap.CompressFormat.JPEG, 50, stream);
+    tagBitmap.compress(Bitmap.CompressFormat.JPEG, 60, stream);
     tagBitmap.recycle();
 
     FileOutputStream fos = new FileOutputStream(tagImg);
@@ -100,10 +100,6 @@ class Engine {
     fos.flush();
     fos.close();
     stream.close();
-
-    long end = SystemClock.elapsedRealtime();
-    long elapsed = end - begin;
-    Log.d("Engine", "the compression time is " + elapsed);
 
     return tagImg;
   }

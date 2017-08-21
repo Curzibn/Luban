@@ -67,7 +67,7 @@ public class MainActivity extends AppCompatActivity {
     }
   }
 
-  private void compressWithRx(List<String> photos) {
+  private void compressWithRx(final List<String> photos) {
     Flowable.just(photos)
         .observeOn(Schedulers.io())
         .map(new Function<List<String>, List<File>>() {
@@ -79,6 +79,7 @@ public class MainActivity extends AppCompatActivity {
         .subscribe(new Consumer<List<File>>() {
           @Override public void accept(@NonNull List<File> list) throws Exception {
             for (File file : list) {
+              showResult(photos, file);
             }
           }
         });
@@ -90,6 +91,7 @@ public class MainActivity extends AppCompatActivity {
   private void compressWithLs(final List<String> photos) {
     Luban.with(this)
         .load(photos)
+        .ignoreBy(100)
         .setCompressListener(new OnCompressListener() {
           @Override
           public void onStart() {
@@ -97,20 +99,24 @@ public class MainActivity extends AppCompatActivity {
 
           @Override
           public void onSuccess(File file) {
-            int[] originSize = computeSize(photos.get(mAdapter.getItemCount()));
-            int[] thumbSize = computeSize(file.getAbsolutePath());
-            String originArg = String.format(Locale.CHINA, "原图参数：%d*%d, %dk", originSize[0], originSize[1], new File(photos.get(mAdapter.getItemCount())).length() / 1024);
-            String thumbArg = String.format(Locale.CHINA, "压缩后参数：%d*%d, %dk", thumbSize[0], thumbSize[1], file.length() / 1024);
-
-            ImageBean imageBean = new ImageBean(originArg, thumbArg, file.getAbsolutePath());
-            mImageList.add(imageBean);
-            mAdapter.notifyDataSetChanged();
+            showResult(photos, file);
           }
 
           @Override
           public void onError(Throwable e) {
           }
         }).launch();
+  }
+
+  private void showResult(List<String> photos, File file) {
+    int[] originSize = computeSize(photos.get(mAdapter.getItemCount()));
+    int[] thumbSize = computeSize(file.getAbsolutePath());
+    String originArg = String.format(Locale.CHINA, "原图参数：%d*%d, %dk", originSize[0], originSize[1], new File(photos.get(mAdapter.getItemCount())).length() >> 10);
+    String thumbArg = String.format(Locale.CHINA, "压缩后参数：%d*%d, %dk", thumbSize[0], thumbSize[1], file.length() >> 10);
+
+    ImageBean imageBean = new ImageBean(originArg, thumbArg, file.getAbsolutePath());
+    mImageList.add(imageBean);
+    mAdapter.notifyDataSetChanged();
   }
 
   private int[] computeSize(String srcImg) {

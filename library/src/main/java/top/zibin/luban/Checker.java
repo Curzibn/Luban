@@ -2,16 +2,17 @@ package top.zibin.luban;
 
 import android.text.TextUtils;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
-public class Checker {
+class Checker {
   private static List<String> format = new ArrayList<>();
-  static final String JPG = "jpg";
-  static final String JPEG = "jpeg";
-  static final String PNG = "png";
-  static final String WEBP = "webp";
-  static final String GIF = "gif";
+  private static final String JPG = "jpg";
+  private static final String JPEG = "jpeg";
+  private static final String PNG = "png";
+  private static final String WEBP = "webp";
+  private static final String GIF = "gif";
 
   static {
     format.add(JPG);
@@ -45,5 +46,19 @@ public class Checker {
     }
 
     return path.substring(path.lastIndexOf("."), path.length());
+  }
+
+  static boolean isNeedCompress(int leastCompressSize, String path) {
+    if (leastCompressSize > 0) {
+      File source = new File(path);
+      if (!source.exists()) {
+        return false;
+      }
+
+      if (source.length() <= (leastCompressSize << 10)) {
+        return false;
+      }
+    }
+    return true;
   }
 }

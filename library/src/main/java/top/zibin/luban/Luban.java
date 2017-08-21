@@ -25,14 +25,18 @@ public class Luban implements Handler.Callback {
   private static final int MSG_COMPRESS_START = 1;
   private static final int MSG_COMPRESS_ERROR = 2;
 
+  private String mTargetDir;
   private List<String> mPaths;
-  private OnCompressListener onCompressListener;
+  private int mLeastCompressSize;
+  private OnCompressListener mCompressListener;
 
   private Handler mHandler;
 
   private Luban(Builder builder) {
     this.mPaths = builder.mPaths;
-    this.onCompressListener = builder.onCompressListener;
+    this.mTargetDir = builder.mTargetDir;
+    this.mCompressListener = builder.mCompressListener;
+    this.mLeastCompressSize = builder.mLeastCompressSize;
     mHandler = new Handler(Looper.getMainLooper(), this);
   }
 
@@ -101,8 +105,8 @@ public class Luban implements Handler.Callback {
    * start asynchronous compress thread
    */
   @UiThread private void launch(final Context context) {
-    if (mPaths == null || mPaths.size() == 0 && onCompressListener != null) {
-      onCompressListener.onError(new NullPointerException("image file cannot be null"));
+    if (mPaths == null || mPaths.size() == 0 && mCompressListener != null) {
+      mCompressListener.onError(new NullPointerException("image file cannot be null"));
     }
 
     Iterator<String> iterator = mPaths.iterator();
@@ -114,7 +118,10 @@ public class Luban implements Handler.Callback {
             try {
               mHandler.sendMessage(mHandler.obtainMessage(MSG_COMPRESS_START));
 
-              File result = new Engine(path, getImageCacheFile(context, Checker.checkSuffix(path))).compress();
+              File result = Checker.isNeedCompress(mLeastCompressSize, path) ?
+                  new Engine(path, getImageCacheFile(context, Checker.checkSuffix(path))).compress() :
+                  new File(path);
+
               mHandler.sendMessage(mHandler.obtainMessage(MSG_COMPRESS_SUCCESS, result));
             } catch (IOException e) {
               mHandler.sendMessage(mHandler.obtainMessage(MSG_COMPRESS_ERROR, e));
@@ -151,17 +158,17 @@ public class Luban implements Handler.Callback {
   }
 
   @Override public boolean handleMessage(Message msg) {
-    if (onCompressListener == null) return false;
+    if (mCompressListener == null) return false;
 
     switch (msg.what) {
       case MSG_COMPRESS_START:
-        onCompressListener.onStart();
+        mCompressListener.onStart();
         break;
       case MSG_COMPRESS_SUCCESS:
-        onCompressListener.onSuccess((File) msg.obj);
+        mCompressListener.onSuccess((File) msg.obj);
         break;
       case MSG_COMPRESS_ERROR:
-        onCompressListener.onError((Throwable) msg.obj);
+        mCompressListener.onError((Throwable) msg.obj);
         break;
     }
     return false;
@@ -169,8 +176,10 @@ public class Luban implements Handler.Callback {
 
   public static class Builder {
     private Context context;
+    private String mTargetDir;
     private List<String> mPaths;
-    private OnCompressListener onCompressListener;
+    private int mLeastCompressSize = 100;
+    private OnCompressListener mCompressListener;
 
     Builder(Context context) {
       this.context = context;
@@ -182,17 +191,17 @@ public class Luban implements Handler.Callback {
     }
 
     public Builder load(File file) {
-      mPaths.add(file.getAbsolutePath());
+      this.mPaths.add(file.getAbsolutePath());
       return this;
     }
 
     public Builder load(String string) {
-      mPaths.add(string);
+      this.mPaths.add(string);
       return this;
     }
 
     public Builder load(List<String> list) {
-      mPaths.addAll(list);
+      this.mPaths.addAll(list);
       return this;
     }
 
@@ -201,10 +210,29 @@ public class Luban implements Handler.Callback {
     }
 
     public Builder setCompressListener(OnCompressListener listener) {
-      this.onCompressListener = listener;
+      this.mCompressListener = listener;
       return this;
     }
 
+    public Builder setTargetDir(String targetDir) {
+      this.mTargetDir = targetDir;
+      return this;
+    }
+
+    /**
+     * do not compress when the origin image file size less than one value
+     *
+     * @param size
+     *     the value of file size, unit KB, default 100K
+     */
+    public Builder ignoreBy(int size) {
+      this.mLeastCompressSize = size;
+      return this;
+    }
+
+    /**
+     * begin compress image with asynchronous
+     */
     public void launch() {
       build().launch(context);
     }
@@ -213,6 +241,11 @@ public class Luban implements Handler.Callback {
       return build().get(path, context);
     }
 
+    /**
+     * begin compress image with synchronize
+     *
+     * @return the thumb image file list
+     */
     public List<File> get() throws IOException {
       return build().get(context);
     }
