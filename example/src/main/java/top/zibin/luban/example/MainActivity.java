@@ -3,9 +3,11 @@ package top.zibin.luban.example;
 import android.content.Intent;
 import android.graphics.BitmapFactory;
 import android.os.Bundle;
+import android.os.Environment;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 
@@ -86,12 +88,13 @@ public class MainActivity extends AppCompatActivity {
   }
 
   /**
-   * 压缩单张图片 Listener 方式
+   * 压缩图片 Listener 方式
    */
   private void compressWithLs(final List<String> photos) {
     Luban.with(this)
         .load(photos)
         .ignoreBy(100)
+        .setTargetDir(getPath())
         .setCompressListener(new OnCompressListener() {
           @Override
           public void onStart() {
@@ -106,6 +109,15 @@ public class MainActivity extends AppCompatActivity {
           public void onError(Throwable e) {
           }
         }).launch();
+  }
+
+  private String getPath() {
+    String path = Environment.getExternalStorageDirectory() + "/Luban/image/";
+    File file = new File(path);
+    if (file.mkdirs()) {
+      return path;
+    }
+    return path;
   }
 
   private void showResult(List<String> photos, File file) {
