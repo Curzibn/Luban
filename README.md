@@ -43,22 +43,25 @@ compile 'top.zibin:Luban:1.1.2'
 
 ```java
 Luban.with(this)
-    .load(File)                     //传人要压缩的图片
-    .setCompressListener(new OnCompressListener() { //设置回调
-        @Override
-        public void onStart() {
+        .load(photos)                                   // 传人要压缩的图片列表
+        .ignoreBy(100)                                  // 忽略不压缩图片的大小
+        .setTargetDir(getPath())                        // 设置压缩后文件存储位置
+        .setCompressListener(new OnCompressListener() { //设置回调
+          @Override
+          public void onStart() {
             // TODO 压缩开始前调用，可以在方法内启动 loading UI
-        }
-        @Override
-        public void onSuccess(File file) {
-            // TODO 压缩成功后调用，返回压缩后的图片文件
-        }
+          }
 
-        @Override
-        public void onError(Throwable e) {
+          @Override
+          public void onSuccess(File file) {
+            // TODO 压缩成功后调用，返回压缩后的图片文件
+          }
+
+          @Override
+          public void onError(Throwable e) {
             // TODO 当压缩过程出现问题时调用
-        }
-    }).launch();    //启动压缩
+          }
+        }).launch();    //启动压缩
 ```
 
 ### 同步调用
@@ -66,12 +69,12 @@ Luban.with(this)
 同步方法请尽量避免在主线程调用以免阻塞主线程，下面以rxJava调用为例
 
 ```java
-Flowable.just(file)
+Flowable.just(photos)
     .observeOn(Schedulers.io())
-    .map(new Function<File, File>() {
-      @Override public File apply(@NonNull File file) throws Exception {
+    .map(new Function<List<String>, List<File>>() {
+      @Override public List<File> apply(@NonNull List<String> list) throws Exception {
         // 同步方法直接返回压缩后的文件
-        return Luban.with(MainActivity.this).load(file).get();
+        return Luban.with(MainActivity.this).load(list).get();
       }
     })
     .observeOn(AndroidSchedulers.mainThread())

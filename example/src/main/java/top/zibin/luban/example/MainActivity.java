@@ -64,7 +64,8 @@ public class MainActivity extends AppCompatActivity {
         mImageList.clear();
 
         ArrayList<String> photos = data.getStringArrayListExtra(PhotoPicker.KEY_SELECTED_PHOTOS);
-        compressWithLs(photos);
+//        compressWithLs(photos);
+        compressWithRx(photos);
       }
     }
   }
@@ -81,8 +82,8 @@ public class MainActivity extends AppCompatActivity {
         .subscribe(new Consumer<List<File>>() {
           @Override public void accept(@NonNull List<File> list) throws Exception {
             for (File file : list) {
-              showResult(photos, file);
-            }
+            showResult(photos, file);
+          }
           }
         });
   }
