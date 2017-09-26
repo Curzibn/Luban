@@ -133,7 +133,7 @@ public class Luban implements Handler.Callback {
           }
         });
       } else {
-        Log.e(TAG, "can not read the path : " + path);
+        mCompressListener.onError(new IllegalArgumentException("can not read the path : " + path));
       }
       iterator.remove();
     }
