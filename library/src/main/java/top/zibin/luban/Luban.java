@@ -29,6 +29,7 @@ public class Luban implements Handler.Callback {
   private List<String> mPaths;
   private int mLeastCompressSize;
   private OnCompressListener mCompressListener;
+  private CompressionPredicate mCompressionPredicate;
 
   private Handler mHandler;
 
@@ -37,6 +38,7 @@ public class Luban implements Handler.Callback {
     this.mTargetDir = builder.mTargetDir;
     this.mCompressListener = builder.mCompressListener;
     this.mLeastCompressSize = builder.mLeastCompressSize;
+    this.mCompressionPredicate = builder.mCompressionPredicate;
     mHandler = new Handler(Looper.getMainLooper(), this);
   }
 
@@ -122,9 +124,20 @@ public class Luban implements Handler.Callback {
             try {
               mHandler.sendMessage(mHandler.obtainMessage(MSG_COMPRESS_START));
 
-              File result = Checker.isNeedCompress(mLeastCompressSize, path) ?
-                  new Engine(path, getImageCacheFile(context, Checker.checkSuffix(path))).compress() :
-                  new File(path);
+              File result;
+              if (mCompressionPredicate != null) {
+                if (mCompressionPredicate.apply(path)) {
+                  result = Checker.isNeedCompress(mLeastCompressSize, path) ?
+                          new Engine(path, getImageCacheFile(context, Checker.checkSuffix(path))).compress() :
+                          new File(path);
+                } else {
+                  result = new File(path);
+                }
+              } else {
+                result = Checker.isNeedCompress(mLeastCompressSize, path) ?
+                        new Engine(path, getImageCacheFile(context, Checker.checkSuffix(path))).compress() :
+                        new File(path);
+              }
 
               mHandler.sendMessage(mHandler.obtainMessage(MSG_COMPRESS_SUCCESS, result));
             } catch (IOException e) {
@@ -153,7 +166,13 @@ public class Luban implements Handler.Callback {
     while (iterator.hasNext()) {
       String path = iterator.next();
       if (Checker.isImage(path)) {
-        results.add(new Engine(path, getImageCacheFile(context, Checker.checkSuffix(path))).compress());
+        if (mCompressionPredicate != null) {
+          results.add(mCompressionPredicate.apply(path) ?
+                  new Engine(path, getImageCacheFile(context, Checker.checkSuffix(path))).compress() :
+                  new File(path));
+        } else {
+          results.add(new Engine(path, getImageCacheFile(context, Checker.checkSuffix(path))).compress());
+        }
       }
       iterator.remove();
     }
@@ -184,6 +203,7 @@ public class Luban implements Handler.Callback {
     private List<String> mPaths;
     private int mLeastCompressSize = 100;
     private OnCompressListener mCompressListener;
+    private CompressionPredicate mCompressionPredicate;
 
     Builder(Context context) {
       this.context = context;
@@ -233,6 +253,18 @@ public class Luban implements Handler.Callback {
       this.mLeastCompressSize = size;
       return this;
     }
+
+    /**
+     * do compress image when return value was true, otherwise, do not compress the image file
+     *
+     * @param compressionPredicate
+     *     A predicate callback that returns true or false for the given input path should be compressed.
+     */
+    public Builder filter(CompressionPredicate compressionPredicate) {
+      this.mCompressionPredicate = compressionPredicate;
+      return this;
+    }
+
 
     /**
      * begin compress image with asynchronous
