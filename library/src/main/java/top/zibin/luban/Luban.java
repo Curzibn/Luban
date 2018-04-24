@@ -1,6 +1,7 @@
 package top.zibin.luban;
 
 import android.content.Context;
+import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Handler;
 import android.os.Looper;
@@ -12,7 +13,9 @@ import android.text.TextUtils;
 import android.util.Log;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -26,14 +29,14 @@ public class Luban implements Handler.Callback {
   private static final int MSG_COMPRESS_ERROR = 2;
 
   private String mTargetDir;
-  private List<String> mPaths;
+  private List<InputStreamProvider> mStreamProviders;
   private int mLeastCompressSize;
   private OnCompressListener mCompressListener;
 
   private Handler mHandler;
 
   private Luban(Builder builder) {
-    this.mPaths = builder.mPaths;
+    this.mStreamProviders = builder.mStreamProviders;
     this.mTargetDir = builder.mTargetDir;
     this.mCompressListener = builder.mCompressListener;
     this.mLeastCompressSize = builder.mLeastCompressSize;
@@ -89,7 +92,7 @@ public class Luban implements Handler.Callback {
    * @see #getImageCacheDir(Context)
    */
   @Nullable
-  private File getImageCacheDir(Context context, String cacheName) {
+  private static File getImageCacheDir(Context context, String cacheName) {
     File cacheDir = context.getExternalCacheDir();
     if (cacheDir != null) {
       File result = new File(cacheDir, cacheName);
@@ -109,22 +112,22 @@ public class Luban implements Handler.Callback {
    * start asynchronous compress thread
    */
   @UiThread private void launch(final Context context) {
-    if (mPaths == null || mPaths.size() == 0 && mCompressListener != null) {
+    if (mStreamProviders == null || mStreamProviders.size() == 0 && mCompressListener != null) {
       mCompressListener.onError(new NullPointerException("image file cannot be null"));
     }
 
-    Iterator<String> iterator = mPaths.iterator();
+    Iterator<InputStreamProvider> iterator = mStreamProviders.iterator();
     while (iterator.hasNext()) {
-      final String path = iterator.next();
-      if (Checker.isImage(path)) {
+      final InputStreamProvider path = iterator.next();
+      if (Checker.isImage(path.getPath())) {
         AsyncTask.SERIAL_EXECUTOR.execute(new Runnable() {
           @Override public void run() {
             try {
               mHandler.sendMessage(mHandler.obtainMessage(MSG_COMPRESS_START));
 
-              File result = Checker.isNeedCompress(mLeastCompressSize, path) ?
-                  new Engine(path, getImageCacheFile(context, Checker.checkSuffix(path))).compress() :
-                  new File(path);
+              File result = Checker.isNeedCompress(mLeastCompressSize, path.getPath()) ?
+                  new Engine(path, getImageCacheFile(context, Checker.checkSuffix(path.getPath()))).compress() :
+                  new File(path.getPath());
 
               mHandler.sendMessage(mHandler.obtainMessage(MSG_COMPRESS_SUCCESS, result));
             } catch (IOException e) {
@@ -142,18 +145,18 @@ public class Luban implements Handler.Callback {
   /**
    * start compress and return the mFile
    */
-  @WorkerThread private File get(String path, Context context) throws IOException {
-    return new Engine(path, getImageCacheFile(context, Checker.checkSuffix(path))).compress();
+  @WorkerThread private File get(InputStreamProvider path, Context context) throws IOException {
+    return new Engine(path, getImageCacheFile(context, Checker.checkSuffix(path.getPath()))).compress();
   }
 
   @WorkerThread private List<File> get(Context context) throws IOException {
     List<File> results = new ArrayList<>();
-    Iterator<String> iterator = mPaths.iterator();
+    Iterator<InputStreamProvider> iterator = mStreamProviders.iterator();
 
     while (iterator.hasNext()) {
-      String path = iterator.next();
-      if (Checker.isImage(path)) {
-        results.add(new Engine(path, getImageCacheFile(context, Checker.checkSuffix(path))).compress());
+        InputStreamProvider path = iterator.next();
+      if (Checker.isImage(path.getPath())) {
+        results.add(new Engine(path, getImageCacheFile(context, Checker.checkSuffix(path.getPath()))).compress());
       }
       iterator.remove();
     }
@@ -181,32 +184,74 @@ public class Luban implements Handler.Callback {
   public static class Builder {
     private Context context;
     private String mTargetDir;
-    private List<String> mPaths;
+    private List<InputStreamProvider> mStreamProviders;
     private int mLeastCompressSize = 100;
     private OnCompressListener mCompressListener;
 
     Builder(Context context) {
       this.context = context;
-      this.mPaths = new ArrayList<>();
+      this.mStreamProviders = new ArrayList<>();
     }
 
     private Luban build() {
       return new Luban(this);
     }
 
-    public Builder load(File file) {
-      this.mPaths.add(file.getAbsolutePath());
+    public Builder load(InputStreamProvider inputStreamProvider){
+        mStreamProviders.add(inputStreamProvider);
+        return this;
+    }
+
+    public Builder load(final File file) {
+      mStreamProviders.add(new InputStreamProvider() {
+        @Override
+        public InputStream open() throws IOException {
+          return new FileInputStream(file);
+        }
+
+        @Override
+        public String getPath() {
+            return file.getAbsolutePath();
+        }
+      });
       return this;
     }
 
-    public Builder load(String string) {
-      this.mPaths.add(string);
+    public Builder load(final String string) {
+      mStreamProviders.add(new InputStreamProvider() {
+        @Override
+        public InputStream open() throws IOException {
+          return new FileInputStream(string);
+        }
+
+        @Override
+        public String getPath() {
+            return string;
+        }
+      });
       return this;
     }
 
     public Builder load(List<String> list) {
-      this.mPaths.addAll(list);
+      for (String s : list) {
+        load(s);
+      }
       return this;
+    }
+
+    public Builder load(final Uri uri){
+        mStreamProviders.add(new InputStreamProvider() {
+            @Override
+            public InputStream open() throws IOException {
+                return context.getContentResolver().openInputStream(uri);
+            }
+
+            @Override
+            public String getPath() {
+                return uri.getPath();
+            }
+        });
+        return this;
     }
 
     public Builder putGear(int gear) {
@@ -241,8 +286,18 @@ public class Luban implements Handler.Callback {
       build().launch(context);
     }
 
-    public File get(String path) throws IOException {
-      return build().get(path, context);
+    public File get(final String path) throws IOException {
+      return build().get(new InputStreamProvider() {
+          @Override
+          public InputStream open() throws IOException {
+              return new FileInputStream(path);
+          }
+
+          @Override
+          public String getPath() {
+              return path;
+          }
+      }, context);
     }
 
     /**
