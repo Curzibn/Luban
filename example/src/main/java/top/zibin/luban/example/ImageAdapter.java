@@ -10,12 +10,11 @@ import android.widget.TextView;
 
 import com.bumptech.glide.Glide;
 
-import java.util.ArrayList;
 import java.util.List;
 
 class ImageAdapter extends RecyclerView.Adapter<ImageAdapter.ImageHolder> {
   private Context mContext;
-  private List<ImageBean> mImageList = new ArrayList<>();
+  private List<ImageBean> mImageList;
 
   ImageAdapter(List<ImageBean> imageList) {
     mImageList = imageList == null ? mImageList : imageList;
@@ -48,9 +47,9 @@ class ImageAdapter extends RecyclerView.Adapter<ImageAdapter.ImageHolder> {
     ImageHolder(View view) {
       super(view);
 
-      originArg = (TextView) view.findViewById(R.id.origin_arg);
-      thumbArg = (TextView) view.findViewById(R.id.thumb_arg);
-      image = (ImageView) view.findViewById(R.id.image);
+      originArg = view.findViewById(R.id.origin_arg);
+      thumbArg = view.findViewById(R.id.thumb_arg);
+      image = view.findViewById(R.id.image);
     }
   }
 }
