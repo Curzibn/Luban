@@ -3,7 +3,7 @@ package top.zibin.luban;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Matrix;
-import android.media.ExifInterface;
+import android.support.media.ExifInterface;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -15,14 +15,14 @@ import java.io.IOException;
  */
 class Engine {
   private ExifInterface srcExif;
-  private String srcImg;
+  private InputStreamProvider srcImg;
   private File tagImg;
   private int srcWidth;
   private int srcHeight;
 
-  Engine(String srcImg, File tagImg) throws IOException {
-    if (Checker.isJPG(srcImg)) {
-      this.srcExif = new ExifInterface(srcImg);
+  Engine(InputStreamProvider srcImg, File tagImg) throws IOException {
+    if (Checker.isJPG(srcImg.getPath())) {
+      this.srcExif = new ExifInterface(srcImg.open());
     }
     this.tagImg = tagImg;
     this.srcImg = srcImg;
@@ -31,7 +31,7 @@ class Engine {
     options.inJustDecodeBounds = true;
     options.inSampleSize = 1;
 
-    BitmapFactory.decodeFile(srcImg, options);
+    BitmapFactory.decodeStream(srcImg.open(), null, options);
     this.srcWidth = options.outWidth;
     this.srcHeight = options.outHeight;
   }
@@ -88,7 +88,7 @@ class Engine {
     BitmapFactory.Options options = new BitmapFactory.Options();
     options.inSampleSize = computeSize();
 
-    Bitmap tagBitmap = BitmapFactory.decodeFile(srcImg, options);
+    Bitmap tagBitmap = BitmapFactory.decodeStream(srcImg.open(), null, options);
     ByteArrayOutputStream stream = new ByteArrayOutputStream();
 
     tagBitmap = rotatingImage(tagBitmap);
