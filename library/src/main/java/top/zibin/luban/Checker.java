@@ -51,13 +51,7 @@ class Checker {
   static boolean isNeedCompress(int leastCompressSize, String path) {
     if (leastCompressSize > 0) {
       File source = new File(path);
-      if (!source.exists()) {
-        return false;
-      }
-
-      if (source.length() <= (leastCompressSize << 10)) {
-        return false;
-      }
+      return source.exists() && source.length() > (leastCompressSize << 10);
     }
     return true;
   }

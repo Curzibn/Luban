@@ -47,7 +47,7 @@ class Engine {
     if (scale <= 1 && scale > 0.5625) {
       if (longSide < 1664) {
         return 1;
-      } else if (longSide >= 1664 && longSide < 4990) {
+      } else if (longSide < 4990) {
         return 2;
       } else if (longSide > 4990 && longSide < 10240) {
         return 4;

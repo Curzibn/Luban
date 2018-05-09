@@ -20,6 +20,7 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
+@SuppressWarnings("unused")
 public class Luban implements Handler.Callback {
   private static final String TAG = "Luban";
   private static final String DEFAULT_DISK_CACHE_DIR = "luban_disk_cache";
@@ -50,8 +51,7 @@ public class Luban implements Handler.Callback {
   /**
    * Returns a mFile with a cache audio name in the private cache directory.
    *
-   * @param context
-   *     A context.
+   * @param context A context.
    */
   private File getImageCacheFile(Context context, String suffix) {
     if (TextUtils.isEmpty(mTargetDir)) {
@@ -70,9 +70,7 @@ public class Luban implements Handler.Callback {
    * Returns a directory with a default name in the private cache directory of the application to
    * use to store retrieved audio.
    *
-   * @param context
-   *     A context.
-   *
+   * @param context A context.
    * @see #getImageCacheDir(Context, String)
    */
   @Nullable
@@ -84,11 +82,8 @@ public class Luban implements Handler.Callback {
    * Returns a directory with the given name in the private cache directory of the application to
    * use to store retrieved media and thumbnails.
    *
-   * @param context
-   *     A context.
-   * @param cacheName
-   *     The name of the subdirectory in which to store the cache.
-   *
+   * @param context   A context.
+   * @param cacheName The name of the subdirectory in which to store the cache.
    * @see #getImageCacheDir(Context)
    */
   @Nullable
@@ -111,7 +106,8 @@ public class Luban implements Handler.Callback {
   /**
    * start asynchronous compress thread
    */
-  @UiThread private void launch(final Context context) {
+  @UiThread
+  private void launch(final Context context) {
     if (mStreamProviders == null || mStreamProviders.size() == 0 && mCompressListener != null) {
       mCompressListener.onError(new NullPointerException("image file cannot be null"));
     }
@@ -121,7 +117,8 @@ public class Luban implements Handler.Callback {
       final InputStreamProvider path = iterator.next();
       if (Checker.isImage(path.getPath())) {
         AsyncTask.SERIAL_EXECUTOR.execute(new Runnable() {
-          @Override public void run() {
+          @Override
+          public void run() {
             try {
               mHandler.sendMessage(mHandler.obtainMessage(MSG_COMPRESS_START));
 
@@ -145,16 +142,18 @@ public class Luban implements Handler.Callback {
   /**
    * start compress and return the mFile
    */
-  @WorkerThread private File get(InputStreamProvider path, Context context) throws IOException {
+  @WorkerThread
+  private File get(InputStreamProvider path, Context context) throws IOException {
     return new Engine(path, getImageCacheFile(context, Checker.checkSuffix(path.getPath()))).compress();
   }
 
-  @WorkerThread private List<File> get(Context context) throws IOException {
+  @WorkerThread
+  private List<File> get(Context context) throws IOException {
     List<File> results = new ArrayList<>();
     Iterator<InputStreamProvider> iterator = mStreamProviders.iterator();
 
     while (iterator.hasNext()) {
-        InputStreamProvider path = iterator.next();
+      InputStreamProvider path = iterator.next();
       if (Checker.isImage(path.getPath())) {
         results.add(new Engine(path, getImageCacheFile(context, Checker.checkSuffix(path.getPath()))).compress());
       }
@@ -164,7 +163,8 @@ public class Luban implements Handler.Callback {
     return results;
   }
 
-  @Override public boolean handleMessage(Message msg) {
+  @Override
+  public boolean handleMessage(Message msg) {
     if (mCompressListener == null) return false;
 
     switch (msg.what) {
@@ -197,9 +197,9 @@ public class Luban implements Handler.Callback {
       return new Luban(this);
     }
 
-    public Builder load(InputStreamProvider inputStreamProvider){
-        mStreamProviders.add(inputStreamProvider);
-        return this;
+    public Builder load(InputStreamProvider inputStreamProvider) {
+      mStreamProviders.add(inputStreamProvider);
+      return this;
     }
 
     public Builder load(final File file) {
@@ -211,7 +211,7 @@ public class Luban implements Handler.Callback {
 
         @Override
         public String getPath() {
-            return file.getAbsolutePath();
+          return file.getAbsolutePath();
         }
       });
       return this;
@@ -226,7 +226,7 @@ public class Luban implements Handler.Callback {
 
         @Override
         public String getPath() {
-            return string;
+          return string;
         }
       });
       return this;
@@ -239,19 +239,19 @@ public class Luban implements Handler.Callback {
       return this;
     }
 
-    public Builder load(final Uri uri){
-        mStreamProviders.add(new InputStreamProvider() {
-            @Override
-            public InputStream open() throws IOException {
-                return context.getContentResolver().openInputStream(uri);
-            }
+    public Builder load(final Uri uri) {
+      mStreamProviders.add(new InputStreamProvider() {
+        @Override
+        public InputStream open() throws IOException {
+          return context.getContentResolver().openInputStream(uri);
+        }
 
-            @Override
-            public String getPath() {
-                return uri.getPath();
-            }
-        });
-        return this;
+        @Override
+        public String getPath() {
+          return uri.getPath();
+        }
+      });
+      return this;
     }
 
     public Builder putGear(int gear) {
@@ -271,8 +271,7 @@ public class Luban implements Handler.Callback {
     /**
      * do not compress when the origin image file size less than one value
      *
-     * @param size
-     *     the value of file size, unit KB, default 100K
+     * @param size the value of file size, unit KB, default 100K
      */
     public Builder ignoreBy(int size) {
       this.mLeastCompressSize = size;
@@ -288,15 +287,15 @@ public class Luban implements Handler.Callback {
 
     public File get(final String path) throws IOException {
       return build().get(new InputStreamProvider() {
-          @Override
-          public InputStream open() throws IOException {
-              return new FileInputStream(path);
-          }
+        @Override
+        public InputStream open() throws IOException {
+          return new FileInputStream(path);
+        }
 
-          @Override
-          public String getPath() {
-              return path;
-          }
+        @Override
+        public String getPath() {
+          return path;
+        }
       }, context);
     }
 
