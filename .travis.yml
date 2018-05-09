@@ -10,13 +10,19 @@ sudo: false
 android:
   components:
     - tools
+    - platform-tools
     - build-tools-27.0.3
     - android-27
-    - extra-android-m2repository
-    - extra-android-support
+
+before_cache:
+  - rm -f $HOME/.gradle/caches/modules-2/modules-2.lock
+cache:
+  directories:
+    - $HOME/.gradle/caches/
+    - $HOME/.gradle/wrapper/
 
 before_install:
- - chmod +x gradlew
+  - yes | sdkmanager 'platforms;android-27'
 
 script:
   - ./gradlew assembleRelease
