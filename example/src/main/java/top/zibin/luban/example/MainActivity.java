@@ -18,6 +18,7 @@ import java.util.Locale;
 import io.reactivex.Flowable;
 import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.annotations.NonNull;
+import io.reactivex.disposables.CompositeDisposable;
 import io.reactivex.functions.Consumer;
 import io.reactivex.functions.Function;
 import io.reactivex.schedulers.Schedulers;
@@ -30,11 +31,14 @@ public class MainActivity extends AppCompatActivity {
 
   private List<ImageBean> mImageList = new ArrayList<>();
   private ImageAdapter mAdapter = new ImageAdapter(mImageList);
+  private CompositeDisposable mDisposable;
 
   @Override
   protected void onCreate(Bundle savedInstanceState) {
     super.onCreate(savedInstanceState);
     setContentView(R.layout.activity_main);
+
+    mDisposable = new CompositeDisposable();
 
     RecyclerView mRecyclerView = findViewById(R.id.recycler_view);
     mRecyclerView.setLayoutManager(new LinearLayoutManager(this));
@@ -55,6 +59,12 @@ public class MainActivity extends AppCompatActivity {
   }
 
   @Override
+  protected void onDestroy() {
+    super.onDestroy();
+    mDisposable.clear();
+  }
+
+  @Override
   protected void onActivityResult(int requestCode, int resultCode, Intent data) {
     super.onActivityResult(requestCode, resultCode, data);
 
@@ -70,21 +80,23 @@ public class MainActivity extends AppCompatActivity {
   }
 
   private void compressWithRx(final List<String> photos) {
-    Flowable.just(photos)
+    mDisposable.add(Flowable.just(photos)
         .observeOn(Schedulers.io())
         .map(new Function<List<String>, List<File>>() {
-          @Override public List<File> apply(@NonNull List<String> list) throws Exception {
+          @Override
+          public List<File> apply(@NonNull List<String> list) throws Exception {
             return Luban.with(MainActivity.this).load(list).get();
           }
         })
         .observeOn(AndroidSchedulers.mainThread())
         .subscribe(new Consumer<List<File>>() {
-          @Override public void accept(@NonNull List<File> list) throws Exception {
+          @Override
+          public void accept(@NonNull List<File> list) throws Exception {
             for (File file : list) {
-            showResult(photos, file);
+              showResult(photos, file);
+            }
           }
-          }
-        });
+        }));
   }
 
   /**
