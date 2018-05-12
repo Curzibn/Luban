@@ -7,6 +7,7 @@ import android.os.Environment;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.text.TextUtils;
 import android.view.View;
 import android.widget.Button;
 
@@ -23,6 +24,7 @@ import io.reactivex.functions.Consumer;
 import io.reactivex.functions.Function;
 import io.reactivex.schedulers.Schedulers;
 import me.iwf.photopicker.PhotoPicker;
+import top.zibin.luban.CompressionPredicate;
 import top.zibin.luban.Luban;
 import top.zibin.luban.OnCompressListener;
 
@@ -85,7 +87,15 @@ public class MainActivity extends AppCompatActivity {
         .map(new Function<List<String>, List<File>>() {
           @Override
           public List<File> apply(@NonNull List<String> list) throws Exception {
-            return Luban.with(MainActivity.this).load(list).get();
+            return Luban.with(MainActivity.this)
+                .load(list)
+                .filter(new CompressionPredicate() {
+                  @Override
+                  public boolean apply(String path) {
+                    return !(TextUtils.isEmpty(path) || path.toLowerCase().endsWith(".gif"));
+                  }
+                })
+                .get();
           }
         })
         .observeOn(AndroidSchedulers.mainThread())
