@@ -77,7 +77,7 @@ Luban.with(this)
           public void onError(Throwable e) {
             // TODO 当压缩过程出现问题时调用
           }
-        }).launch();    //启动压缩
+        }).launch();
 ```
 
 ### 同步调用
@@ -99,7 +99,7 @@ Flowable.just(photos)
 
 ### RELEASE NOTE
 
-* **1.1.4**：load方法新增传入类型以兼容Uri图片地址
+* **1.1.4**：load方法新增传入类型以兼容Uri图片地址，新增 filter 方法对列表每张图片做压缩判断
 
 # License
 
