@@ -87,15 +87,7 @@ public class MainActivity extends AppCompatActivity {
         .map(new Function<List<String>, List<File>>() {
           @Override
           public List<File> apply(@NonNull List<String> list) throws Exception {
-            return Luban.with(MainActivity.this)
-                .load(list)
-                .filter(new CompressionPredicate() {
-                  @Override
-                  public boolean apply(String path) {
-                    return !(TextUtils.isEmpty(path) || path.toLowerCase().endsWith(".gif"));
-                  }
-                })
-                .get();
+            return Luban.with(MainActivity.this).load(list).get();
           }
         })
         .observeOn(AndroidSchedulers.mainThread())
@@ -117,6 +109,12 @@ public class MainActivity extends AppCompatActivity {
         .load(photos)
         .ignoreBy(100)
         .setTargetDir(getPath())
+        .filter(new CompressionPredicate() {
+          @Override
+          public boolean apply(String path) {
+            return !(TextUtils.isEmpty(path) || path.toLowerCase().endsWith(".gif"));
+          }
+        })
         .setCompressListener(new OnCompressListener() {
           @Override
           public void onStart() {

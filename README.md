@@ -32,10 +32,20 @@
 # 导入
 
 ```sh
-compile 'top.zibin:Luban:1.1.3'
+implementation 'top.zibin:Luban:1.1.4'
 ```
 
 # 使用
+
+### 方法列表
+
+方法 | 描述
+---- | ----
+load | 传入原图
+ignoreBy | 不压缩的阈值，单位为K
+setTargetDir | 缓存压缩图片路径
+filter | 设置开启压缩条件
+setCompressListener | 压缩回调
 
 ### 异步调用
 
@@ -43,10 +53,16 @@ compile 'top.zibin:Luban:1.1.3'
 
 ```java
 Luban.with(this)
-        .load(photos)                                   // 传人要压缩的图片列表
-        .ignoreBy(100)                                  // 忽略不压缩图片的大小
-        .setTargetDir(getPath())                        // 设置压缩后文件存储位置
-        .setCompressListener(new OnCompressListener() { //设置回调
+        .load(photos)
+        .ignoreBy(100)
+        .setTargetDir(getPath())
+        .filter(new CompressionPredicate() {
+          @Override
+          public boolean apply(String path) {
+            return !(TextUtils.isEmpty(path) || path.toLowerCase().endsWith(".gif"));
+          }
+        })
+        .setCompressListener(new OnCompressListener() {
           @Override
           public void onStart() {
             // TODO 压缩开始前调用，可以在方法内启动 loading UI
@@ -80,6 +96,10 @@ Flowable.just(photos)
     .observeOn(AndroidSchedulers.mainThread())
     .subscribe();
 ```
+
+### RELEASE NOTE
+
+* **1.1.4**：load方法新增传入类型以兼容Uri图片地址
 
 # License
 
