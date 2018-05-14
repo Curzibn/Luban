@@ -6,7 +6,9 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
-class Checker {
+enum Checker {
+  SINGLE;
+
   private static List<String> format = new ArrayList<>();
   private static final String JPG = "jpg";
   private static final String JPEG = "jpeg";
@@ -22,7 +24,8 @@ class Checker {
     format.add(GIF);
   }
 
-  static boolean isImage(String path) {
+  @Deprecated
+  boolean isImage(String path) {
     if (TextUtils.isEmpty(path)) {
       return false;
     }
@@ -31,7 +34,7 @@ class Checker {
     return format.contains(suffix.toLowerCase());
   }
 
-  static boolean isJPG(String path) {
+  boolean isJPG(String path) {
     if (TextUtils.isEmpty(path)) {
       return false;
     }
@@ -40,7 +43,7 @@ class Checker {
     return suffix.contains(JPG) || suffix.contains(JPEG);
   }
 
-  static String checkSuffix(String path) {
+  String extSuffix(String path) {
     if (TextUtils.isEmpty(path)) {
       return ".jpg";
     }
@@ -48,7 +51,7 @@ class Checker {
     return path.substring(path.lastIndexOf("."), path.length());
   }
 
-  static boolean isNeedCompress(int leastCompressSize, String path) {
+  boolean isNeedCompress(int leastCompressSize, String path) {
     if (leastCompressSize > 0) {
       File source = new File(path);
       return source.exists() && source.length() > (leastCompressSize << 10);

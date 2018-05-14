@@ -21,7 +21,7 @@ class Engine {
   private int srcHeight;
 
   Engine(InputStreamProvider srcImg, File tagImg) throws IOException {
-    if (Checker.isJPG(srcImg.getPath())) {
+    if (Checker.SINGLE.isJPG(srcImg.getPath())) {
       this.srcExif = new ExifInterface(srcImg.open());
     }
     this.tagImg = tagImg;

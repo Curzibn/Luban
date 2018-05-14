@@ -30,16 +30,16 @@ public class Luban implements Handler.Callback {
   private static final int MSG_COMPRESS_ERROR = 2;
 
   private String mTargetDir;
-  private List<InputStreamProvider> mStreamProviders;
   private int mLeastCompressSize;
   private OnCompressListener mCompressListener;
   private CompressionPredicate mCompressionPredicate;
+  private List<InputStreamProvider> mStreamProviders;
 
   private Handler mHandler;
 
   private Luban(Builder builder) {
-    this.mStreamProviders = builder.mStreamProviders;
     this.mTargetDir = builder.mTargetDir;
+    this.mStreamProviders = builder.mStreamProviders;
     this.mCompressListener = builder.mCompressListener;
     this.mLeastCompressSize = builder.mLeastCompressSize;
     this.mCompressionPredicate = builder.mCompressionPredicate;
@@ -115,39 +115,38 @@ public class Luban implements Handler.Callback {
     }
 
     Iterator<InputStreamProvider> iterator = mStreamProviders.iterator();
+
     while (iterator.hasNext()) {
       final InputStreamProvider path = iterator.next();
-      if (Checker.isImage(path.getPath())) {
-        AsyncTask.SERIAL_EXECUTOR.execute(new Runnable() {
-          @Override
-          public void run() {
-            try {
-              mHandler.sendMessage(mHandler.obtainMessage(MSG_COMPRESS_START));
 
-              File result;
-              if (mCompressionPredicate != null) {
-                if (mCompressionPredicate.apply(path.getPath())) {
-                  result = Checker.isNeedCompress(mLeastCompressSize, path.getPath()) ?
-                      new Engine(path, getImageCacheFile(context, Checker.checkSuffix(path.getPath()))).compress() :
-                      new File(path.getPath());
-                } else {
-                  result = new File(path.getPath());
-                }
-              } else {
-                result = Checker.isNeedCompress(mLeastCompressSize, path.getPath()) ?
-                    new Engine(path, getImageCacheFile(context, Checker.checkSuffix(path.getPath()))).compress() :
+      AsyncTask.SERIAL_EXECUTOR.execute(new Runnable() {
+        @Override
+        public void run() {
+          try {
+            mHandler.sendMessage(mHandler.obtainMessage(MSG_COMPRESS_START));
+
+            File result;
+            if (mCompressionPredicate != null) {
+              if (mCompressionPredicate.apply(path.getPath())) {
+                result = Checker.SINGLE.isNeedCompress(mLeastCompressSize, path.getPath()) ?
+                    new Engine(path, getImageCacheFile(context, Checker.SINGLE.extSuffix(path.getPath()))).compress() :
                     new File(path.getPath());
+              } else {
+                result = new File(path.getPath());
               }
-
-              mHandler.sendMessage(mHandler.obtainMessage(MSG_COMPRESS_SUCCESS, result));
-            } catch (IOException e) {
-              mHandler.sendMessage(mHandler.obtainMessage(MSG_COMPRESS_ERROR, e));
+            } else {
+              result = Checker.SINGLE.isNeedCompress(mLeastCompressSize, path.getPath()) ?
+                  new Engine(path, getImageCacheFile(context, Checker.SINGLE.extSuffix(path.getPath()))).compress() :
+                  new File(path.getPath());
             }
+
+            mHandler.sendMessage(mHandler.obtainMessage(MSG_COMPRESS_SUCCESS, result));
+          } catch (IOException e) {
+            mHandler.sendMessage(mHandler.obtainMessage(MSG_COMPRESS_ERROR, e));
           }
-        });
-      } else {
-        mCompressListener.onError(new IllegalArgumentException("can not read the path : " + path));
-      }
+        }
+      });
+
       iterator.remove();
     }
   }
@@ -157,7 +156,7 @@ public class Luban implements Handler.Callback {
    */
   @WorkerThread
   private File get(InputStreamProvider path, Context context) throws IOException {
-    return new Engine(path, getImageCacheFile(context, Checker.checkSuffix(path.getPath()))).compress();
+    return new Engine(path, getImageCacheFile(context, Checker.SINGLE.extSuffix(path.getPath()))).compress();
   }
 
   @WorkerThread
@@ -167,15 +166,15 @@ public class Luban implements Handler.Callback {
 
     while (iterator.hasNext()) {
       InputStreamProvider path = iterator.next();
-      if (Checker.isImage(path.getPath())) {
-        if (mCompressionPredicate != null) {
-          results.add(mCompressionPredicate.apply(path.getPath()) ?
-              new Engine(path, getImageCacheFile(context, Checker.checkSuffix(path.getPath()))).compress() :
-              new File(path.getPath()));
-        } else {
-          results.add(new Engine(path, getImageCacheFile(context, Checker.checkSuffix(path.getPath()))).compress());
-        }
+
+      if (mCompressionPredicate != null) {
+        results.add(mCompressionPredicate.apply(path.getPath()) ?
+            new Engine(path, getImageCacheFile(context, Checker.SINGLE.extSuffix(path.getPath()))).compress() :
+            new File(path.getPath()));
+      } else {
+        results.add(new Engine(path, getImageCacheFile(context, Checker.SINGLE.extSuffix(path.getPath()))).compress());
       }
+
       iterator.remove();
     }
 
