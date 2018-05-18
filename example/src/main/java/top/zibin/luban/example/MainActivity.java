@@ -8,10 +8,14 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.text.TextUtils;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 
 import java.io.File;
+import java.math.BigInteger;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
@@ -27,6 +31,7 @@ import me.iwf.photopicker.PhotoPicker;
 import top.zibin.luban.CompressionPredicate;
 import top.zibin.luban.Luban;
 import top.zibin.luban.OnCompressListener;
+import top.zibin.luban.OnRenameListener;
 
 public class MainActivity extends AppCompatActivity {
   private static final String TAG = "Luban";
@@ -75,8 +80,8 @@ public class MainActivity extends AppCompatActivity {
         mImageList.clear();
 
         ArrayList<String> photos = data.getStringArrayListExtra(PhotoPicker.KEY_SELECTED_PHOTOS);
-//        compressWithLs(photos);
-        compressWithRx(photos);
+        compressWithLs(photos);
+//        compressWithRx(photos);
       }
     }
   }
@@ -87,7 +92,9 @@ public class MainActivity extends AppCompatActivity {
         .map(new Function<List<String>, List<File>>() {
           @Override
           public List<File> apply(@NonNull List<String> list) throws Exception {
-            return Luban.with(MainActivity.this).load(list).get();
+            return Luban.with(MainActivity.this)
+                .load(list)
+                .get();
           }
         })
         .observeOn(AndroidSchedulers.mainThread())
@@ -95,6 +102,7 @@ public class MainActivity extends AppCompatActivity {
           @Override
           public void accept(@NonNull List<File> list) throws Exception {
             for (File file : list) {
+              Log.i(TAG, file.getAbsolutePath());
               showResult(photos, file);
             }
           }
@@ -115,19 +123,31 @@ public class MainActivity extends AppCompatActivity {
             return !(TextUtils.isEmpty(path) || path.toLowerCase().endsWith(".gif"));
           }
         })
+        .setRenameListener(new OnRenameListener() {
+          @Override
+          public String rename(String filePath) {
+            try {
+              MessageDigest md = MessageDigest.getInstance("MD5");
+              md.update(filePath.getBytes());
+              return new BigInteger(1, md.digest()).toString(32);
+            } catch (NoSuchAlgorithmException e) {
+              e.printStackTrace();
+            }
+            return "";
+          }
+        })
         .setCompressListener(new OnCompressListener() {
           @Override
-          public void onStart() {
-          }
+          public void onStart() { }
 
           @Override
           public void onSuccess(File file) {
+            Log.i(TAG, file.getAbsolutePath());
             showResult(photos, file);
           }
 
           @Override
-          public void onError(Throwable e) {
-          }
+          public void onError(Throwable e) { }
         }).launch();
   }
 

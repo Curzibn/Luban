@@ -31,6 +31,7 @@ public class Luban implements Handler.Callback {
 
   private String mTargetDir;
   private int mLeastCompressSize;
+  private OnRenameListener mRenameListener;
   private OnCompressListener mCompressListener;
   private CompressionPredicate mCompressionPredicate;
   private List<InputStreamProvider> mStreamProviders;
@@ -39,6 +40,7 @@ public class Luban implements Handler.Callback {
 
   private Luban(Builder builder) {
     this.mTargetDir = builder.mTargetDir;
+    this.mRenameListener = builder.mRenameListener;
     this.mStreamProviders = builder.mStreamProviders;
     this.mCompressListener = builder.mCompressListener;
     this.mLeastCompressSize = builder.mLeastCompressSize;
@@ -51,7 +53,7 @@ public class Luban implements Handler.Callback {
   }
 
   /**
-   * Returns a mFile with a cache audio name in the private cache directory.
+   * Returns a file with a cache image name in the private cache directory.
    *
    * @param context A context.
    */
@@ -64,6 +66,16 @@ public class Luban implements Handler.Callback {
         System.currentTimeMillis() +
         (int) (Math.random() * 1000) +
         (TextUtils.isEmpty(suffix) ? ".jpg" : suffix);
+
+    return new File(cacheBuilder);
+  }
+
+  private File getImageCustomFile(Context context, String filename) {
+    if (TextUtils.isEmpty(mTargetDir)) {
+      mTargetDir = getImageCacheDir(context).getAbsolutePath();
+    }
+
+    String cacheBuilder = mTargetDir + "/" + filename;
 
     return new File(cacheBuilder);
   }
@@ -125,20 +137,7 @@ public class Luban implements Handler.Callback {
           try {
             mHandler.sendMessage(mHandler.obtainMessage(MSG_COMPRESS_START));
 
-            File result;
-            if (mCompressionPredicate != null) {
-              if (mCompressionPredicate.apply(path.getPath())) {
-                result = Checker.SINGLE.isNeedCompress(mLeastCompressSize, path.getPath()) ?
-                    new Engine(path, getImageCacheFile(context, Checker.SINGLE.extSuffix(path.getPath()))).compress() :
-                    new File(path.getPath());
-              } else {
-                result = new File(path.getPath());
-              }
-            } else {
-              result = Checker.SINGLE.isNeedCompress(mLeastCompressSize, path.getPath()) ?
-                  new Engine(path, getImageCacheFile(context, Checker.SINGLE.extSuffix(path.getPath()))).compress() :
-                  new File(path.getPath());
-            }
+            File result = compress(context, path);
 
             mHandler.sendMessage(mHandler.obtainMessage(MSG_COMPRESS_SUCCESS, result));
           } catch (IOException e) {
@@ -165,20 +164,37 @@ public class Luban implements Handler.Callback {
     Iterator<InputStreamProvider> iterator = mStreamProviders.iterator();
 
     while (iterator.hasNext()) {
-      InputStreamProvider path = iterator.next();
-
-      if (mCompressionPredicate != null) {
-        results.add(mCompressionPredicate.apply(path.getPath()) ?
-            new Engine(path, getImageCacheFile(context, Checker.SINGLE.extSuffix(path.getPath()))).compress() :
-            new File(path.getPath()));
-      } else {
-        results.add(new Engine(path, getImageCacheFile(context, Checker.SINGLE.extSuffix(path.getPath()))).compress());
-      }
-
+      results.add(compress(context, iterator.next()));
       iterator.remove();
     }
 
     return results;
+  }
+
+  private File compress(Context context, InputStreamProvider path) throws IOException {
+    File result;
+
+    File outFile = getImageCacheFile(context, Checker.SINGLE.extSuffix(path.getPath()));
+
+    if (mRenameListener != null) {
+      String filename = mRenameListener.rename(path.getPath());
+      outFile = getImageCustomFile(context, filename);
+    }
+
+    if (mCompressionPredicate != null) {
+      if (mCompressionPredicate.apply(path.getPath())
+          && Checker.SINGLE.needCompress(mLeastCompressSize, path.getPath())) {
+        result = new Engine(path, outFile).compress();
+      } else {
+        result = new File(path.getPath());
+      }
+    } else {
+      result = Checker.SINGLE.needCompress(mLeastCompressSize, path.getPath()) ?
+          new Engine(path, outFile).compress() :
+          new File(path.getPath());
+    }
+
+    return result;
   }
 
   @Override
@@ -202,10 +218,11 @@ public class Luban implements Handler.Callback {
   public static class Builder {
     private Context context;
     private String mTargetDir;
-    private List<InputStreamProvider> mStreamProviders;
     private int mLeastCompressSize = 100;
+    private OnRenameListener mRenameListener;
     private OnCompressListener mCompressListener;
     private CompressionPredicate mCompressionPredicate;
+    private List<InputStreamProvider> mStreamProviders;
 
     Builder(Context context) {
       this.context = context;
@@ -274,6 +291,11 @@ public class Luban implements Handler.Callback {
     }
 
     public Builder putGear(int gear) {
+      return this;
+    }
+
+    public Builder setRenameListener(OnRenameListener listener) {
+      this.mRenameListener = listener;
       return this;
     }
 
