@@ -1,7 +1,7 @@
 package top.zibin.luban.example;
 
-import android.content.Intent;
 import android.graphics.BitmapFactory;
+import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
 import android.support.v7.app.AppCompatActivity;
@@ -9,10 +9,13 @@ import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.text.TextUtils;
 import android.util.Log;
-import android.view.View;
-import android.widget.Button;
+import android.view.Menu;
+import android.view.MenuItem;
 
 import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.math.BigInteger;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
@@ -27,7 +30,6 @@ import io.reactivex.disposables.CompositeDisposable;
 import io.reactivex.functions.Consumer;
 import io.reactivex.functions.Function;
 import io.reactivex.schedulers.Schedulers;
-import me.iwf.photopicker.PhotoPicker;
 import top.zibin.luban.CompressionPredicate;
 import top.zibin.luban.Luban;
 import top.zibin.luban.OnCompressListener;
@@ -40,6 +42,8 @@ public class MainActivity extends AppCompatActivity {
   private ImageAdapter mAdapter = new ImageAdapter(mImageList);
   private CompositeDisposable mDisposable;
 
+  private List<File> originPhotos = new ArrayList<>();
+
   @Override
   protected void onCreate(Bundle savedInstanceState) {
     super.onCreate(savedInstanceState);
@@ -50,19 +54,6 @@ public class MainActivity extends AppCompatActivity {
     RecyclerView mRecyclerView = findViewById(R.id.recycler_view);
     mRecyclerView.setLayoutManager(new LinearLayoutManager(this));
     mRecyclerView.setAdapter(mAdapter);
-
-    Button fab = findViewById(R.id.fab);
-    fab.setOnClickListener(new View.OnClickListener() {
-      @Override
-      public void onClick(View view) {
-        PhotoPicker.builder()
-            .setPhotoCount(9)
-            .setShowCamera(true)
-            .setShowGif(true)
-            .setPreviewEnabled(false)
-            .start(MainActivity.this, PhotoPicker.REQUEST_CODE);
-      }
-    });
   }
 
   @Override
@@ -72,26 +63,79 @@ public class MainActivity extends AppCompatActivity {
   }
 
   @Override
-  protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-    super.onActivityResult(requestCode, resultCode, data);
-
-    if (resultCode == RESULT_OK && requestCode == PhotoPicker.REQUEST_CODE) {
-      if (data != null) {
-        mImageList.clear();
-
-        ArrayList<String> photos = data.getStringArrayListExtra(PhotoPicker.KEY_SELECTED_PHOTOS);
-        compressWithLs(photos);
-//        compressWithRx(photos);
-      }
-    }
+  public boolean onCreateOptionsMenu(Menu menu) {
+    getMenuInflater().inflate(R.menu.menu_main, menu);
+    return true;
   }
 
-  private void compressWithRx(final List<String> photos) {
+  @Override
+  public boolean onOptionsItemSelected(MenuItem item) {
+    originPhotos.clear();
+    mImageList.clear();
+
+    switch (item.getItemId()) {
+      case R.id.sync_files:
+        withRx(assetsToFiles());
+        break;
+      case R.id.sync_uris:
+        withRx(assetsToUri());
+        break;
+      case R.id.async_files:
+        withLs(assetsToFiles());
+        break;
+      case R.id.async_uris:
+        withLs(assetsToUri());
+        break;
+    }
+    return super.onOptionsItemSelected(item);
+  }
+
+  private List<File> assetsToFiles() {
+    final List<File> files = new ArrayList<>();
+
+    for (int i = 0; i < 2; i++) {
+      try {
+        InputStream is = getResources().getAssets().open("jpg_" + i + ".jpg");
+        File file = new File(getExternalFilesDir(null), "test_" + i + ".jpg");
+        FileOutputStream fos = new FileOutputStream(file);
+
+        byte[] buffer = new byte[4096];
+        int len = is.read(buffer);
+        while (len > 0) {
+          fos.write(buffer, 0, len);
+          len = is.read(buffer);
+        }
+        fos.close();
+        is.close();
+
+        files.add(file);
+        originPhotos.add(file);
+      } catch (IOException e) {
+        e.printStackTrace();
+      }
+    }
+
+    return files;
+  }
+
+  private List<Uri> assetsToUri() {
+    final List<Uri> uris = new ArrayList<>();
+    final List<File> files = assetsToFiles();
+
+    for (int i = 0; i < 2; i++) {
+      Uri uri = Uri.fromFile(files.get(i));
+      uris.add(uri);
+    }
+
+    return uris;
+  }
+
+  private <T> void withRx(final List<T> photos) {
     mDisposable.add(Flowable.just(photos)
         .observeOn(Schedulers.io())
-        .map(new Function<List<String>, List<File>>() {
+        .map(new Function<List<T>, List<File>>() {
           @Override
-          public List<File> apply(@NonNull List<String> list) throws Exception {
+          public List<File> apply(@NonNull List<T> list) throws Exception {
             return Luban.with(MainActivity.this)
                 .load(list)
                 .get();
@@ -100,19 +144,16 @@ public class MainActivity extends AppCompatActivity {
         .observeOn(AndroidSchedulers.mainThread())
         .subscribe(new Consumer<List<File>>() {
           @Override
-          public void accept(@NonNull List<File> list) throws Exception {
+          public void accept(@NonNull List<File> list) {
             for (File file : list) {
               Log.i(TAG, file.getAbsolutePath());
-              showResult(photos, file);
+              showResult(originPhotos, file);
             }
           }
         }));
   }
 
-  /**
-   * 压缩图片 Listener 方式
-   */
-  private void compressWithLs(final List<String> photos) {
+  private <T> void withLs(final List<T> photos) {
     Luban.with(this)
         .load(photos)
         .ignoreBy(100)
@@ -143,7 +184,7 @@ public class MainActivity extends AppCompatActivity {
           @Override
           public void onSuccess(File file) {
             Log.i(TAG, file.getAbsolutePath());
-            showResult(photos, file);
+            showResult(originPhotos, file);
           }
 
           @Override
@@ -160,10 +201,10 @@ public class MainActivity extends AppCompatActivity {
     return path;
   }
 
-  private void showResult(List<String> photos, File file) {
+  private void showResult(List<File> photos, File file) {
     int[] originSize = computeSize(photos.get(mAdapter.getItemCount()));
-    int[] thumbSize = computeSize(file.getAbsolutePath());
-    String originArg = String.format(Locale.CHINA, "原图参数：%d*%d, %dk", originSize[0], originSize[1], new File(photos.get(mAdapter.getItemCount())).length() >> 10);
+    int[] thumbSize = computeSize(file);
+    String originArg = String.format(Locale.CHINA, "原图参数：%d*%d, %dk", originSize[0], originSize[1], photos.get(mAdapter.getItemCount()).length() >> 10);
     String thumbArg = String.format(Locale.CHINA, "压缩后参数：%d*%d, %dk", thumbSize[0], thumbSize[1], file.length() >> 10);
 
     ImageBean imageBean = new ImageBean(originArg, thumbArg, file.getAbsolutePath());
@@ -171,14 +212,14 @@ public class MainActivity extends AppCompatActivity {
     mAdapter.notifyDataSetChanged();
   }
 
-  private int[] computeSize(String srcImg) {
+  private int[] computeSize(File srcImg) {
     int[] size = new int[2];
 
     BitmapFactory.Options options = new BitmapFactory.Options();
     options.inJustDecodeBounds = true;
     options.inSampleSize = 1;
 
-    BitmapFactory.decodeFile(srcImg, options);
+    BitmapFactory.decodeFile(srcImg.getAbsolutePath(), options);
     size[0] = options.outWidth;
     size[1] = options.outHeight;
 

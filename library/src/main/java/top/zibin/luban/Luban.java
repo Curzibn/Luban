@@ -268,9 +268,17 @@ public class Luban implements Handler.Callback {
       return this;
     }
 
-    public Builder load(List<String> list) {
-      for (String s : list) {
-        load(s);
+    public <T> Builder load(List<T> list) {
+      for (T src : list) {
+        if (src instanceof String) {
+          load((String) src);
+        } else if (src instanceof File) {
+          load((File) src);
+        } else if (src instanceof Uri) {
+          load((Uri) src);
+        } else {
+          throw new IllegalArgumentException("Incoming data type exception, it must be String, File, Uri or Bitmap");
+        }
       }
       return this;
     }

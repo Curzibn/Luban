@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <item
+        android:id="@+id/sync_files"
+        android:title="Sync Files/Strings"/>
+    <item
+        android:id="@+id/sync_uris"
+        android:title="Sync Uris"/>
+    <item
+        android:id="@+id/async_files"
+        android:title="Async Files/Strings"/>
+    <item
+        android:id="@+id/async_uris"
+        android:title="Async Uris"/>
+</menu>

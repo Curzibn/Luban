@@ -1,4 +1,4 @@
 <resources>
-  <string name="app_name">Luban</string>
-  <string name="choose_image">选择图片</string>
+    <string name="app_name">Luban</string>
+    <string name="choose_image">选择图片</string>
 </resources>
