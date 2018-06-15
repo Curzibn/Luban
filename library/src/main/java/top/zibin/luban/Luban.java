@@ -6,9 +6,6 @@ import android.os.AsyncTask;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.Message;
-import android.support.annotation.Nullable;
-import android.support.annotation.UiThread;
-import android.support.annotation.WorkerThread;
 import android.text.TextUtils;
 import android.util.Log;
 
@@ -87,7 +84,6 @@ public class Luban implements Handler.Callback {
    * @param context A context.
    * @see #getImageCacheDir(Context, String)
    */
-  @Nullable
   private File getImageCacheDir(Context context) {
     return getImageCacheDir(context, DEFAULT_DISK_CACHE_DIR);
   }
@@ -100,7 +96,6 @@ public class Luban implements Handler.Callback {
    * @param cacheName The name of the subdirectory in which to store the cache.
    * @see #getImageCacheDir(Context)
    */
-  @Nullable
   private static File getImageCacheDir(Context context, String cacheName) {
     File cacheDir = context.getExternalCacheDir();
     if (cacheDir != null) {
@@ -120,7 +115,6 @@ public class Luban implements Handler.Callback {
   /**
    * start asynchronous compress thread
    */
-  @UiThread
   private void launch(final Context context) {
     if (mStreamProviders == null || mStreamProviders.size() == 0 && mCompressListener != null) {
       mCompressListener.onError(new NullPointerException("image file cannot be null"));
@@ -153,12 +147,10 @@ public class Luban implements Handler.Callback {
   /**
    * start compress and return the mFile
    */
-  @WorkerThread
   private File get(InputStreamProvider path, Context context) throws IOException {
     return new Engine(path, getImageCacheFile(context, Checker.SINGLE.extSuffix(path.getPath()))).compress();
   }
 
-  @WorkerThread
   private List<File> get(Context context) throws IOException {
     List<File> results = new ArrayList<>();
     Iterator<InputStreamProvider> iterator = mStreamProviders.iterator();

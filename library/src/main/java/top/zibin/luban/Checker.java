@@ -3,7 +3,10 @@ package top.zibin.luban;
 import android.text.TextUtils;
 import android.util.Log;
 
+import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -12,7 +15,7 @@ import java.util.logging.Logger;
 enum Checker {
   SINGLE;
 
-  private final String TAG = "Luban";
+  private static final String TAG = "Luban";
 
   private static List<String> format = new ArrayList<>();
   private static final String JPG = "jpg";
@@ -41,16 +44,11 @@ enum Checker {
     return format.contains(suffix.toLowerCase());
   }
 
-  boolean isJPG(String path) {
-    if (TextUtils.isEmpty(path)) {
-      return false;
-    }
-
-    String suffix = path.substring(path.lastIndexOf("."), path.length()).toLowerCase();
-    return suffix.contains(JPG) || suffix.contains(JPEG);
+  boolean isJPG(InputStream is) {
+    return isJPG(toByteArray(is));
   }
 
-  boolean isJPG(byte[] data) {
+  private boolean isJPG(byte[] data) {
     if (data == null || data.length < 3) {
       return false;
     }
@@ -61,7 +59,14 @@ enum Checker {
   /**
    * Returns the degrees in clockwise. Values are 0, 90, 180, or 270.
    */
-  int getOrientation(byte[] jpeg) {
+  int getOrientation(InputStream is) {
+    return getOrientation(toByteArray(is));
+  }
+
+  /**
+   * Returns the degrees in clockwise. Values are 0, 90, 180, or 270.
+   */
+  private int getOrientation(byte[] jpeg) {
     if (jpeg == null) {
       return 0;
     }
@@ -186,5 +191,31 @@ enum Checker {
       offset += step;
     }
     return value;
+  }
+
+  private byte[] toByteArray(InputStream is) {
+    if (is == null) {
+      return new byte[0];
+    }
+
+    ByteArrayOutputStream buffer = new ByteArrayOutputStream();
+
+    int read;
+    byte[] data = new byte[4096];
+
+    try {
+      while ((read = is.read(data, 0, data.length)) != -1) {
+        buffer.write(data, 0, read);
+      }
+    } catch (Exception ignored) {
+      return new byte[0];
+    } finally {
+      try {
+        buffer.close();
+      } catch (IOException ignored) {
+      }
+    }
+
+    return buffer.toByteArray();
   }
 }

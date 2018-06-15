@@ -3,7 +3,6 @@ package top.zibin.luban;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Matrix;
-import android.media.ExifInterface;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -14,16 +13,12 @@ import java.io.IOException;
  * Responsible for starting compress and managing active and cached resources.
  */
 class Engine {
-  private ExifInterface srcExif;
   private InputStreamProvider srcImg;
   private File tagImg;
   private int srcWidth;
   private int srcHeight;
 
   Engine(InputStreamProvider srcImg, File tagImg) throws IOException {
-    if (Checker.SINGLE.isJPG(srcImg.getPath())) {
-      this.srcExif = new ExifInterface(srcImg.open());
-    }
     this.tagImg = tagImg;
     this.srcImg = srcImg;
 
@@ -61,23 +56,8 @@ class Engine {
     }
   }
 
-  private Bitmap rotatingImage(Bitmap bitmap) {
-    if (srcExif == null) return bitmap;
-
+  private Bitmap rotatingImage(Bitmap bitmap, int angle) {
     Matrix matrix = new Matrix();
-    int angle = 0;
-    int orientation = srcExif.getAttributeInt(ExifInterface.TAG_ORIENTATION, ExifInterface.ORIENTATION_NORMAL);
-    switch (orientation) {
-      case ExifInterface.ORIENTATION_ROTATE_90:
-        angle = 90;
-        break;
-      case ExifInterface.ORIENTATION_ROTATE_180:
-        angle = 180;
-        break;
-      case ExifInterface.ORIENTATION_ROTATE_270:
-        angle = 270;
-        break;
-    }
 
     matrix.postRotate(angle);
 
@@ -91,7 +71,9 @@ class Engine {
     Bitmap tagBitmap = BitmapFactory.decodeStream(srcImg.open(), null, options);
     ByteArrayOutputStream stream = new ByteArrayOutputStream();
 
-    tagBitmap = rotatingImage(tagBitmap);
+    if (Checker.SINGLE.isJPG(srcImg.open())) {
+      tagBitmap = rotatingImage(tagBitmap, Checker.SINGLE.getOrientation(srcImg.open()));
+    }
     tagBitmap.compress(Bitmap.CompressFormat.JPEG, 60, stream);
     tagBitmap.recycle();
 
