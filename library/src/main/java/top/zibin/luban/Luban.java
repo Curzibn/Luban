@@ -27,6 +27,7 @@ public class Luban implements Handler.Callback {
   private static final int MSG_COMPRESS_ERROR = 2;
 
   private String mTargetDir;
+  private boolean focusAlpha;
   private int mLeastCompressSize;
   private OnRenameListener mRenameListener;
   private OnCompressListener mCompressListener;
@@ -145,10 +146,10 @@ public class Luban implements Handler.Callback {
   }
 
   /**
-   * start compress and return the mFile
+   * start compress and return the file
    */
-  private File get(InputStreamProvider path, Context context) throws IOException {
-    return new Engine(path, getImageCacheFile(context, Checker.SINGLE.extSuffix(path.getPath()))).compress();
+  private File get(InputStreamProvider input, Context context) throws IOException {
+    return new Engine(input, getImageCacheFile(context, Checker.SINGLE.extSuffix(input)), focusAlpha).compress();
   }
 
   private List<File> get(Context context) throws IOException {
@@ -166,7 +167,7 @@ public class Luban implements Handler.Callback {
   private File compress(Context context, InputStreamProvider path) throws IOException {
     File result;
 
-    File outFile = getImageCacheFile(context, Checker.SINGLE.extSuffix(path.getPath()));
+    File outFile = getImageCacheFile(context, Checker.SINGLE.extSuffix(path));
 
     if (mRenameListener != null) {
       String filename = mRenameListener.rename(path.getPath());
@@ -176,13 +177,13 @@ public class Luban implements Handler.Callback {
     if (mCompressionPredicate != null) {
       if (mCompressionPredicate.apply(path.getPath())
           && Checker.SINGLE.needCompress(mLeastCompressSize, path.getPath())) {
-        result = new Engine(path, outFile).compress();
+        result = new Engine(path, outFile, focusAlpha).compress();
       } else {
         result = new File(path.getPath());
       }
     } else {
       result = Checker.SINGLE.needCompress(mLeastCompressSize, path.getPath()) ?
-          new Engine(path, outFile).compress() :
+          new Engine(path, outFile, focusAlpha).compress() :
           new File(path.getPath());
     }
 
@@ -210,6 +211,7 @@ public class Luban implements Handler.Callback {
   public static class Builder {
     private Context context;
     private String mTargetDir;
+    private boolean focusAlpha;
     private int mLeastCompressSize = 100;
     private OnRenameListener mRenameListener;
     private OnCompressListener mCompressListener;
@@ -306,6 +308,17 @@ public class Luban implements Handler.Callback {
 
     public Builder setTargetDir(String targetDir) {
       this.mTargetDir = targetDir;
+      return this;
+    }
+
+    /**
+     * Do I need to keep the image's alpha channel
+     *
+     * @param focusAlpha <p> true - to keep alpha channel, the compress speed will be slow. </p>
+     *                   <p> false - don't keep alpha channel, it might have a black background.</p>
+     */
+    public Builder setFocusAlpha(boolean focusAlpha) {
+      this.focusAlpha = focusAlpha;
       return this;
     }
 

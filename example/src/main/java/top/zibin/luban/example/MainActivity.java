@@ -93,10 +93,10 @@ public class MainActivity extends AppCompatActivity {
   private List<File> assetsToFiles() {
     final List<File> files = new ArrayList<>();
 
-    for (int i = 0; i < 2; i++) {
+    for (int i = 0; i < 3; i++) {
       try {
-        InputStream is = getResources().getAssets().open("jpg_" + i + ".jpg");
-        File file = new File(getExternalFilesDir(null), "test_" + i + ".jpg");
+        InputStream is = getResources().getAssets().open("img_" + i);
+        File file = new File(getExternalFilesDir(null), "test_" + i);
         FileOutputStream fos = new FileOutputStream(file);
 
         byte[] buffer = new byte[4096];
@@ -137,6 +137,7 @@ public class MainActivity extends AppCompatActivity {
           @Override
           public List<File> apply(@NonNull List<T> list) throws Exception {
             return Luban.with(MainActivity.this)
+                .setTargetDir(getPath())
                 .load(list)
                 .get();
           }
@@ -158,6 +159,7 @@ public class MainActivity extends AppCompatActivity {
         .load(photos)
         .ignoreBy(100)
         .setTargetDir(getPath())
+        .setFocusAlpha(false)
         .filter(new CompressionPredicate() {
           @Override
           public boolean apply(String path) {

@@ -1,5 +1,7 @@
 package top.zibin.luban;
 
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.text.TextUtils;
 import android.util.Log;
 
@@ -10,7 +12,6 @@ import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.logging.Logger;
 
 enum Checker {
   SINGLE;
@@ -18,11 +19,11 @@ enum Checker {
   private static final String TAG = "Luban";
 
   private static List<String> format = new ArrayList<>();
-  private static final String JPG = "jpg";
-  private static final String JPEG = "jpeg";
-  private static final String PNG = "png";
-  private static final String WEBP = "webp";
-  private static final String GIF = "gif";
+  private static final String JPG = ".jpg";
+  private static final String JPEG = ".jpeg";
+  private static final String PNG = ".png";
+  private static final String WEBP = ".webp";
+  private static final String GIF = ".gif";
 
   private final byte[] JPEG_SIGNATURE = new byte[]{(byte) 0xFF, (byte) 0xD8, (byte) 0xFF};
 
@@ -34,18 +35,20 @@ enum Checker {
     format.add(GIF);
   }
 
-  @Deprecated
-  boolean isImage(String path) {
-    if (TextUtils.isEmpty(path)) {
-      return false;
-    }
-
-    String suffix = path.substring(path.lastIndexOf(".") + 1, path.length());
-    return format.contains(suffix.toLowerCase());
-  }
-
+  /**
+   * Determine if it is JPG.
+   *
+   * @param is image file input stream
+   */
   boolean isJPG(InputStream is) {
     return isJPG(toByteArray(is));
+  }
+
+  /**
+   * Returns the degrees in clockwise. Values are 0, 90, 180, or 270.
+   */
+  int getOrientation(InputStream is) {
+    return getOrientation(toByteArray(is));
   }
 
   private boolean isJPG(byte[] data) {
@@ -56,16 +59,6 @@ enum Checker {
     return Arrays.equals(JPEG_SIGNATURE, signatureB);
   }
 
-  /**
-   * Returns the degrees in clockwise. Values are 0, 90, 180, or 270.
-   */
-  int getOrientation(InputStream is) {
-    return getOrientation(toByteArray(is));
-  }
-
-  /**
-   * Returns the degrees in clockwise. Values are 0, 90, 180, or 270.
-   */
   private int getOrientation(byte[] jpeg) {
     if (jpeg == null) {
       return 0;
@@ -162,12 +155,19 @@ enum Checker {
     return 0;
   }
 
-  String extSuffix(String path) {
-    if (TextUtils.isEmpty(path)) {
-      return ".jpg";
+  String extSuffix(InputStreamProvider input) throws IOException {
+    Bitmap bitmap = BitmapFactory.decodeStream(input.open(), null, new BitmapFactory.Options());
+    String suffix = TextUtils.isEmpty(input.getPath()) ? "" : input.getPath().substring(input.getPath().lastIndexOf("."), input.getPath().length());
+
+    if (bitmap.hasAlpha()) {
+      return PNG;
+    } else if (TextUtils.isEmpty(suffix)) {
+      return JPG;
+    } else if (!format.contains(suffix)) {
+      return JPG;
     }
 
-    return path.substring(path.lastIndexOf("."), path.length());
+    return suffix;
   }
 
   boolean needCompress(int leastCompressSize, String path) {
