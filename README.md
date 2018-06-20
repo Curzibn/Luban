@@ -44,6 +44,7 @@ implementation 'top.zibin:Luban:1.1.5'
 load | 传入原图
 filter | 设置开启压缩条件
 ignoreBy | 不压缩的阈值，单位为K
+setFocusAlpha | 设置是否保留透明通道 
 setTargetDir | 缓存压缩图片路径
 setCompressListener | 压缩回调接口
 setRenameListener | 压缩前重命名接口
@@ -100,8 +101,7 @@ Flowable.just(photos)
 
 ### RELEASE NOTE
 
-* **1.1.5**：添加压缩前重命名接口
-* **1.1.4**：load方法新增传入类型以兼容Uri图片地址，新增 filter 方法对列表每张图片做压缩判断
+[Here](https://github.com/Curzibn/Luban/releases)
 
 # License
 
