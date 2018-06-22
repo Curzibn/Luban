@@ -155,19 +155,24 @@ enum Checker {
     return 0;
   }
 
-  String extSuffix(InputStreamProvider input) throws IOException {
-    Bitmap bitmap = BitmapFactory.decodeStream(input.open(), null, new BitmapFactory.Options());
-    String suffix = TextUtils.isEmpty(input.getPath()) ? "" : input.getPath().substring(input.getPath().lastIndexOf("."), input.getPath().length());
+  String extSuffix(InputStreamProvider input) {
+    try {
+      Bitmap bitmap = BitmapFactory.decodeStream(input.open(), null, new BitmapFactory.Options());
+      String suffix = TextUtils.isEmpty(input.getPath()) ? "" :
+          input.getPath().substring(input.getPath().lastIndexOf("."), input.getPath().length());
 
-    if (bitmap.hasAlpha()) {
-      return PNG;
-    } else if (TextUtils.isEmpty(suffix)) {
-      return JPG;
-    } else if (!format.contains(suffix)) {
+      if (bitmap.hasAlpha()) {
+        return PNG;
+      } else if (TextUtils.isEmpty(suffix)) {
+        return JPG;
+      } else if (!format.contains(suffix)) {
+        return JPG;
+      }
+
+      return suffix;
+    } catch (Exception e) {
       return JPG;
     }
-
-    return suffix;
   }
 
   boolean needCompress(int leastCompressSize, String path) {

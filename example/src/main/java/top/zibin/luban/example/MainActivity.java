@@ -75,7 +75,10 @@ public class MainActivity extends AppCompatActivity {
 
     switch (item.getItemId()) {
       case R.id.sync_files:
-        withRx(assetsToFiles());
+        List<File> list = new ArrayList<>();
+        list.add(new File("/data/user/0/1529400069961674"));
+        originPhotos.addAll(list);
+        withRx(list);
         break;
       case R.id.sync_uris:
         withRx(assetsToUri());
@@ -143,6 +146,13 @@ public class MainActivity extends AppCompatActivity {
           }
         })
         .observeOn(AndroidSchedulers.mainThread())
+        .doOnError(new Consumer<Throwable>() {
+          @Override
+          public void accept(Throwable throwable) {
+            Log.e(TAG, throwable.getMessage());
+          }
+        })
+        .onErrorResumeNext(Flowable.<List<File>>empty())
         .subscribe(new Consumer<List<File>>() {
           @Override
           public void accept(@NonNull List<File> list) {
