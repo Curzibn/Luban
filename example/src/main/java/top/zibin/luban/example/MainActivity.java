@@ -75,10 +75,7 @@ public class MainActivity extends AppCompatActivity {
 
     switch (item.getItemId()) {
       case R.id.sync_files:
-        List<File> list = new ArrayList<>();
-        list.add(new File("/data/user/0/1529400069961674"));
-        originPhotos.addAll(list);
-        withRx(list);
+        withRx(assetsToFiles());
         break;
       case R.id.sync_uris:
         withRx(assetsToUri());
