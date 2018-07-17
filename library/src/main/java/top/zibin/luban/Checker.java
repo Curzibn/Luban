@@ -157,19 +157,10 @@ enum Checker {
 
   String extSuffix(InputStreamProvider input) {
     try {
-      Bitmap bitmap = BitmapFactory.decodeStream(input.open(), null, new BitmapFactory.Options());
-      String suffix = TextUtils.isEmpty(input.getPath()) ? "" :
-          input.getPath().substring(input.getPath().lastIndexOf("."), input.getPath().length());
-
-      if (bitmap.hasAlpha()) {
-        return PNG;
-      } else if (TextUtils.isEmpty(suffix)) {
-        return JPG;
-      } else if (!format.contains(suffix)) {
-        return JPG;
-      }
-
-      return suffix;
+      BitmapFactory.Options options = new BitmapFactory.Options();
+      options.inJustDecodeBounds = true;
+      BitmapFactory.decodeStream(input.open(), null, options);
+      return options.outMimeType.replace("image/", ".");
     } catch (Exception e) {
       return JPG;
     }

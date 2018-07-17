@@ -37,6 +37,7 @@ import top.zibin.luban.OnRenameListener;
 
 public class MainActivity extends AppCompatActivity {
   private static final String TAG = "Luban";
+  private static final int range = 3;
 
   private List<ImageBean> mImageList = new ArrayList<>();
   private ImageAdapter mAdapter = new ImageAdapter(mImageList);
@@ -93,7 +94,7 @@ public class MainActivity extends AppCompatActivity {
   private List<File> assetsToFiles() {
     final List<File> files = new ArrayList<>();
 
-    for (int i = 0; i < 3; i++) {
+    for (int i = 0; i < range; i++) {
       try {
         InputStream is = getResources().getAssets().open("img_" + i);
         File file = new File(getExternalFilesDir(null), "test_" + i);
@@ -122,7 +123,7 @@ public class MainActivity extends AppCompatActivity {
     final List<Uri> uris = new ArrayList<>();
     final List<File> files = assetsToFiles();
 
-    for (int i = 0; i < 2; i++) {
+    for (int i = 0; i < range; i++) {
       Uri uri = Uri.fromFile(files.get(i));
       uris.add(uri);
     }
