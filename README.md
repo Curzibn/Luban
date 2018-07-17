@@ -32,7 +32,7 @@
 # 导入
 
 ```sh
-implementation 'top.zibin:Luban:1.1.7'
+implementation 'top.zibin:Luban:1.1.8'
 ```
 
 # 使用
