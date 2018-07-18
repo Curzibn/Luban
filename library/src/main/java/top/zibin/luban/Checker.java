@@ -1,39 +1,22 @@
 package top.zibin.luban;
 
-import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
-import android.text.TextUtils;
 import android.util.Log;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.List;
 
 enum Checker {
   SINGLE;
 
   private static final String TAG = "Luban";
 
-  private static List<String> format = new ArrayList<>();
   private static final String JPG = ".jpg";
-  private static final String JPEG = ".jpeg";
-  private static final String PNG = ".png";
-  private static final String WEBP = ".webp";
-  private static final String GIF = ".gif";
 
   private final byte[] JPEG_SIGNATURE = new byte[]{(byte) 0xFF, (byte) 0xD8, (byte) 0xFF};
-
-  static {
-    format.add(JPG);
-    format.add(JPEG);
-    format.add(PNG);
-    format.add(WEBP);
-    format.add(GIF);
-  }
 
   /**
    * Determine if it is JPG.
