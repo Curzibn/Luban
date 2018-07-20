@@ -97,7 +97,7 @@ public class MainActivity extends AppCompatActivity {
     for (int i = 0; i < range; i++) {
       try {
         InputStream is = getResources().getAssets().open("img_" + i);
-        File file = new File(getExternalFilesDir(null), "test_" + i);
+        File file = new File(getExternalCacheDir(), "test_" + i);
         FileOutputStream fos = new FileOutputStream(file);
 
         byte[] buffer = new byte[4096];

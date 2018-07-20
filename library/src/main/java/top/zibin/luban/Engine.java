@@ -3,11 +3,14 @@ package top.zibin.luban;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Matrix;
+import android.os.Build;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+
+import top.zibin.luban.turbo.TurboCompressor;
 
 /**
  * Responsible for starting compress and managing active and cached resources.
@@ -18,6 +21,8 @@ class Engine {
   private int srcWidth;
   private int srcHeight;
   private boolean focusAlpha;
+
+  private static final int quality = 60;
 
   Engine(InputStreamProvider srcImg, File tagImg, boolean focusAlpha) throws IOException {
     this.tagImg = tagImg;
@@ -72,15 +77,24 @@ class Engine {
 
     Bitmap tagBitmap = BitmapFactory.decodeStream(srcImg.open(), null, options);
     ByteArrayOutputStream stream = new ByteArrayOutputStream();
+    FileOutputStream fos = new FileOutputStream(tagImg);
 
     if (Checker.SINGLE.isJPG(srcImg.open())) {
       tagBitmap = rotatingImage(tagBitmap, Checker.SINGLE.getOrientation(srcImg.open()));
     }
-    tagBitmap.compress(focusAlpha ? Bitmap.CompressFormat.PNG : Bitmap.CompressFormat.JPEG, 60, stream);
+
+    if (focusAlpha) {
+      tagBitmap.compress(Bitmap.CompressFormat.PNG, quality, stream);
+      fos.write(stream.toByteArray());
+    } else if (Build.VERSION.SDK_INT < Build.VERSION_CODES.N) {
+      TurboCompressor.compress(tagBitmap, quality, tagImg.getAbsolutePath());
+    } else {
+      tagBitmap.compress(Bitmap.CompressFormat.JPEG, quality, stream);
+      fos.write(stream.toByteArray());
+    }
+
     tagBitmap.recycle();
 
-    FileOutputStream fos = new FileOutputStream(tagImg);
-    fos.write(stream.toByteArray());
     fos.flush();
     fos.close();
     stream.close();
