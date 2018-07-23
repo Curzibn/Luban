@@ -19,6 +19,7 @@ implementation 'top.zibin:Luban-turbo:1.0.0'
 
 ### 引入JNI动态文件
 
+- `build.gradle`添加`ndk`配置
 ```
 android {
     defaultConfig {
@@ -28,6 +29,8 @@ android {
     }
 }
 ```
+
+- 拷贝`so`文件到项目`jniLibs`文件夹
 
 Luban 提供4个平台的`so`文件: 
 [`armeabi-v7a`](https://github.com/Curzibn/Luban/blob/turbo/library/src/main/jniLibs/armeabi-v7a/libluban.so)、
