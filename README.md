@@ -1,41 +1,39 @@
 # Luban
 
-[![Build Status](https://travis-ci.org/Curzibn/Luban.svg?branch=master)](https://travis-ci.org/Curzibn/Luban)
-[ ![Download](https://api.bintray.com/packages/curzibn/maven/Luban/images/download.svg) ](https://bintray.com/curzibn/maven/Luban/_latestVersion)
-
-<div align="right">
-<a href="Translation/README-EN.md">:book: English Documentation</a>
-</div>
+[![Build Status](https://travis-ci.org/Curzibn/Luban.svg?branch=turbo)](https://travis-ci.org/Curzibn/Luban)
+[ ![Download](https://api.bintray.com/packages/curzibn/maven/Luban-turbo/images/download.svg) ](https://bintray.com/curzibn/maven/Luban/_latestVersion)
 
 `Luban`（鲁班） —— `Android`图片压缩工具，仿微信朋友圈压缩策略。
 
-# 项目描述
+# 分支描述
 
-目前做`App`开发总绕不开图片这个元素。但是随着手机拍照分辨率的提升，图片的压缩成为一个很重要的问题。单纯对图片进行裁切，压缩已经有很多文章介绍。但是裁切成多少，压缩成多少却很难控制好，裁切过头图片太小，质量压缩过头则显示效果太差。
-
-于是自然想到`App`巨头“微信”会是怎么处理，`Luban`（鲁班）就是通过在微信朋友圈发送近100张不同分辨率图片，对比原图与微信压缩后的图片逆向推算出来的压缩算法。
-
-因为有其他语言也想要实现`Luban`，所以描述了一遍[算法步骤](/DESCRIPTION.md)。
-
-因为是逆向推算，效果还没法跟微信一模一样，但是已经很接近微信朋友圈压缩后的效果，具体看以下对比！
-
-# 效果与对比
-
-内容 | 原图 | `Luban` | `Wechat`
----- | ---- | ------ | ------
-截屏 720P |720*1280,390k|720*1280,87k|720*1280,56k
-截屏 1080P|1080*1920,2.21M|1080*1920,104k|1080*1920,112k
-拍照 13M(4:3)|3096*4128,3.12M|1548*2064,141k|1548*2064,147k
-拍照 9.6M(16:9)|4128*2322,4.64M|1032*581,97k|1032*581,74k
-滚动截屏|1080*6433,1.56M|1080*6433,351k|1080*6433,482k
+本分支为`Luban`主体项目引入`libjpeg-turbo`的`jni`版本
 
 # 导入
 
 ```sh
-implementation 'top.zibin:Luban:1.1.8'
+implementation 'top.zibin:Luban-turbo:1.0.0'
 ```
 
 # 使用
+
+### 引入JNI动态文件
+
+```
+android {
+    defaultConfig {
+        ndk {
+            abiFilters 'armeabi-v7a', 'arm64-v8a' //or x86、x86_64
+        }
+    }
+}
+```
+
+Luban 提供4个平台的`so`文件: 
+[`armeabi-v7a`](https://github.com/Curzibn/Luban/blob/turbo/library/src/main/jniLibs/armeabi-v7a/libluban.so)、
+[`arm64-v8a`](https://github.com/Curzibn/Luban/blob/turbo/library/src/main/jniLibs/arm64-v8a/libluban.so)、
+[`x86`](https://github.com/Curzibn/Luban/blob/turbo/library/src/main/jniLibs/x86/libluban.so)、
+[`x86_64`](https://github.com/Curzibn/Luban/blob/turbo/library/src/main/jniLibs/x86_64/libluban.so)
 
 ### 方法列表
 
