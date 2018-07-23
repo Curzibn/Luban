@@ -9,6 +9,12 @@
 
 本分支为`Luban`主体项目引入`libjpeg-turbo`的`jni`版本
 
+`libjpeg-turbo`是一个C语音编写的高效JPEG图像处理库，`Android`系统在7.0版本之前内部使用的是`libjpeg`非turbo版，并且为了性能关闭了[`Huffman`](https://en.wikipedia.org/wiki/Huffman_coding)编码。在7.0之后的系统内部使用了`libjpeg-turbo`库并且启用`Huffman`编码。
+
+使用本分支可使7.0之前的系统也用上压缩速度更快，压缩效果更好的`libjpeg-turbo`库，但是需引入额外的`so`文件，会增加最终打包后`app`文件的大小。
+
+本分支c语音源代码可查看此项目：[Luban-Turbo](https://github.com/Curzibn/Luban-Turbo)
+
 # 导入
 
 ```sh
