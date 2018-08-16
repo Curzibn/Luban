@@ -1,9 +1,15 @@
 package top.zibin.luban.example;
 
+import android.Manifest;
+import android.annotation.TargetApi;
+import android.content.pm.PackageManager;
 import android.graphics.BitmapFactory;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
+import android.support.v4.app.ActivityCompat;
+import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -55,6 +61,8 @@ public class MainActivity extends AppCompatActivity {
     RecyclerView mRecyclerView = findViewById(R.id.recycler_view);
     mRecyclerView.setLayoutManager(new LinearLayoutManager(this));
     mRecyclerView.setAdapter(mAdapter);
+
+    initPermission();
   }
 
   @Override
@@ -234,5 +242,12 @@ public class MainActivity extends AppCompatActivity {
     size[1] = options.outHeight;
 
     return size;
+  }
+
+  @TargetApi(Build.VERSION_CODES.M)
+  private void initPermission() {
+    if (ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
+      ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, 0x0001);
+    }
   }
 }
