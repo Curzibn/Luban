@@ -18,6 +18,7 @@ class Engine {
   private int srcWidth;
   private int srcHeight;
   private boolean focusAlpha;
+  private int mCompressQuality = 60;
 
   Engine(InputStreamProvider srcImg, File tagImg, boolean focusAlpha) throws IOException {
     this.tagImg = tagImg;
@@ -31,6 +32,21 @@ class Engine {
     BitmapFactory.decodeStream(srcImg.open(), null, options);
     this.srcWidth = options.outWidth;
     this.srcHeight = options.outHeight;
+  }
+
+  /**
+   * compress quality 10-100,if less 10 the photo may be very fuzzy
+   * @param quality
+   * @return
+   */
+  public Engine setCompressQuality(int quality){
+    if (quality < 10){
+      quality = 10;
+    }else if (quality > 100){
+      quality = 100;
+    }
+    this.mCompressQuality = quality;
+    return this;
   }
 
   private int computeSize() {
@@ -76,7 +92,7 @@ class Engine {
     if (Checker.SINGLE.isJPG(srcImg.open())) {
       tagBitmap = rotatingImage(tagBitmap, Checker.SINGLE.getOrientation(srcImg.open()));
     }
-    tagBitmap.compress(focusAlpha ? Bitmap.CompressFormat.PNG : Bitmap.CompressFormat.JPEG, 60, stream);
+    tagBitmap.compress(focusAlpha ? Bitmap.CompressFormat.PNG : Bitmap.CompressFormat.JPEG, mCompressQuality, stream);
     tagBitmap.recycle();
 
     FileOutputStream fos = new FileOutputStream(tagImg);
