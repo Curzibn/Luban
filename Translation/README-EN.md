@@ -108,5 +108,5 @@ Luban.get(this)
     limitations under the License.
 
 
-Translation: [_Szabolcs Pasztor_](https://github.com/spqpad)  
+Translation: [_Szabolcs Pasztor_](https://github.com/szpasztor)  
 Last updated: Aug 8, 2016
