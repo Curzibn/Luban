@@ -33,6 +33,7 @@ public class Luban implements Handler.Callback {
   private OnCompressListener mCompressListener;
   private CompressionPredicate mCompressionPredicate;
   private List<InputStreamProvider> mStreamProviders;
+  private int mCompressQuality = 60; // 图片压缩质量，默认60，最大100
 
   private Handler mHandler;
 
@@ -43,6 +44,7 @@ public class Luban implements Handler.Callback {
     this.mCompressListener = builder.mCompressListener;
     this.mLeastCompressSize = builder.mLeastCompressSize;
     this.mCompressionPredicate = builder.mCompressionPredicate;
+    this.mCompressQuality = builder.mCompressQuality;
     mHandler = new Handler(Looper.getMainLooper(), this);
   }
 
@@ -149,7 +151,7 @@ public class Luban implements Handler.Callback {
    * start compress and return the file
    */
   private File get(InputStreamProvider input, Context context) throws IOException {
-    return new Engine(input, getImageCacheFile(context, Checker.SINGLE.extSuffix(input)), focusAlpha).compress();
+    return new Engine(input, getImageCacheFile(context, Checker.SINGLE.extSuffix(input)), focusAlpha).setCompressQuality(mCompressQuality).compress();
   }
 
   private List<File> get(Context context) throws IOException {
@@ -177,13 +179,13 @@ public class Luban implements Handler.Callback {
     if (mCompressionPredicate != null) {
       if (mCompressionPredicate.apply(path.getPath())
           && Checker.SINGLE.needCompress(mLeastCompressSize, path.getPath())) {
-        result = new Engine(path, outFile, focusAlpha).compress();
+        result = new Engine(path, outFile, focusAlpha).setCompressQuality(mCompressQuality).compress();
       } else {
         result = new File(path.getPath());
       }
     } else {
       result = Checker.SINGLE.needCompress(mLeastCompressSize, path.getPath()) ?
-          new Engine(path, outFile, focusAlpha).compress() :
+          new Engine(path, outFile, focusAlpha).setCompressQuality(mCompressQuality).compress() :
           new File(path.getPath());
     }
 
@@ -217,6 +219,7 @@ public class Luban implements Handler.Callback {
     private OnCompressListener mCompressListener;
     private CompressionPredicate mCompressionPredicate;
     private List<InputStreamProvider> mStreamProviders;
+    private int mCompressQuality = 60 ; //图片压缩质量
 
     Builder(Context context) {
       this.context = context;
@@ -339,6 +342,22 @@ public class Luban implements Handler.Callback {
      */
     public Builder filter(CompressionPredicate compressionPredicate) {
       this.mCompressionPredicate = compressionPredicate;
+      return this;
+    }
+
+
+    /**
+     * compress quality 10-100,if less 10 the photo may be very fuzzy
+     * @param quality
+     * @return
+     */
+    public Builder compressQuality(int quality){
+      if (quality < 10){
+          quality = 10;
+      }else if (quality > 100){
+        quality = 100;
+      }
+      this.mCompressQuality = quality;
       return this;
     }
 
