@@ -149,7 +149,11 @@ public class Luban implements Handler.Callback {
    * start compress and return the file
    */
   private File get(InputStreamProvider input, Context context) throws IOException {
-    return new Engine(input, getImageCacheFile(context, Checker.SINGLE.extSuffix(input)), focusAlpha).compress();
+    try {
+      return new Engine(input, getImageCacheFile(context, Checker.SINGLE.extSuffix(input)), focusAlpha).compress();
+    } finally {
+      input.close();
+    }
   }
 
   private List<File> get(Context context) throws IOException {
@@ -165,6 +169,14 @@ public class Luban implements Handler.Callback {
   }
 
   private File compress(Context context, InputStreamProvider path) throws IOException {
+    try {
+      return compressReal(context,path);
+    } finally {
+      path.close();
+    }
+  }
+
+  private File compressReal(Context context, InputStreamProvider path) throws IOException {
     File result;
 
     File outFile = getImageCacheFile(context, Checker.SINGLE.extSuffix(path));
@@ -233,9 +245,9 @@ public class Luban implements Handler.Callback {
     }
 
     public Builder load(final File file) {
-      mStreamProviders.add(new InputStreamProvider() {
+      mStreamProviders.add(new InputStreamAdapter() {
         @Override
-        public InputStream open() throws IOException {
+        public InputStream openInternal() throws IOException {
           return new FileInputStream(file);
         }
 
@@ -248,9 +260,9 @@ public class Luban implements Handler.Callback {
     }
 
     public Builder load(final String string) {
-      mStreamProviders.add(new InputStreamProvider() {
+      mStreamProviders.add(new InputStreamAdapter() {
         @Override
-        public InputStream open() throws IOException {
+        public InputStream openInternal() throws IOException {
           return new FileInputStream(string);
         }
 
@@ -278,9 +290,9 @@ public class Luban implements Handler.Callback {
     }
 
     public Builder load(final Uri uri) {
-      mStreamProviders.add(new InputStreamProvider() {
+      mStreamProviders.add(new InputStreamAdapter() {
         @Override
-        public InputStream open() throws IOException {
+        public InputStream openInternal() throws IOException {
           return context.getContentResolver().openInputStream(uri);
         }
 
@@ -351,9 +363,9 @@ public class Luban implements Handler.Callback {
     }
 
     public File get(final String path) throws IOException {
-      return build().get(new InputStreamProvider() {
+      return build().get(new InputStreamAdapter() {
         @Override
-        public InputStream open() throws IOException {
+        public InputStream openInternal() throws IOException {
           return new FileInputStream(path);
         }
 
