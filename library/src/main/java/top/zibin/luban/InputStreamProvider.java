@@ -12,5 +12,7 @@ public interface InputStreamProvider {
 
   InputStream open() throws IOException;
 
+  void close();
+
   String getPath();
 }
