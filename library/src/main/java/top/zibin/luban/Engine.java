@@ -3,7 +3,8 @@ package top.zibin.luban;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Matrix;
-
+import android.media.ExifInterface;
+import android.text.TextUtils;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
@@ -73,8 +74,9 @@ class Engine {
     Bitmap tagBitmap = BitmapFactory.decodeStream(srcImg.open(), null, options);
     ByteArrayOutputStream stream = new ByteArrayOutputStream();
 
-    if (Checker.SINGLE.isJPG(srcImg.open())) {
-      tagBitmap = rotatingImage(tagBitmap, Checker.SINGLE.getOrientation(srcImg.open()));
+     String path = srcImg.getPath();
+    if (!TextUtils.isEmpty(path)) {
+      tagBitmap = rotatingImage(tagBitmap, readPictureDegree(path));
     }
     tagBitmap.compress(focusAlpha ? Bitmap.CompressFormat.PNG : Bitmap.CompressFormat.JPEG, 60, stream);
     tagBitmap.recycle();
@@ -87,4 +89,29 @@ class Engine {
 
     return tagImg;
   }
+  
+    private int readPictureDegree(String path) {
+    int degree = 0;
+    try {
+      ExifInterface exifInterface = new ExifInterface(path);
+
+      int orientation = exifInterface.getAttributeInt(ExifInterface.TAG_ORIENTATION, ExifInterface.ORIENTATION_NORMAL);
+      switch (orientation) {
+        case ExifInterface.ORIENTATION_ROTATE_90:
+          degree = 90;
+          break;
+        case ExifInterface.ORIENTATION_ROTATE_180:
+          degree = 180;
+          break;
+        case ExifInterface.ORIENTATION_ROTATE_270:
+          degree = 270;
+          break;
+        default:
+          degree = 0;
+      }
+    } catch (Exception e) {
+    }
+    return degree;
+  }
+
 }
