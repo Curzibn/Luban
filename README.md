@@ -13,7 +13,7 @@
 
 使用本分支可使7.0之前的系统也用上压缩速度更快，压缩效果更好的`libjpeg-turbo`库，但是需引入额外的`so`文件，会增加最终打包后`app`文件的大小。
 
-本分支c语音源代码可查看此项目：[Luban-Turbo](https://github.com/Curzibn/Luban-Turbo)
+本分支C语言源代码可查看此项目：[Luban-Turbo](https://github.com/Curzibn/Luban-Turbo)
 
 # 导入
 
