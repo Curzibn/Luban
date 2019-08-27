@@ -74,7 +74,7 @@ class Engine {
     ByteArrayOutputStream stream = new ByteArrayOutputStream();
 
     if (Checker.SINGLE.isJPG(srcImg.open())) {
-      tagBitmap = rotatingImage(tagBitmap, Checker.SINGLE.getOrientation(srcImg.open()));
+      tagBitmap = rotatingImage(tagBitmap, Checker.SINGLE.getOrientation(srcImg.getPath()));
     }
     tagBitmap.compress(focusAlpha ? Bitmap.CompressFormat.PNG : Bitmap.CompressFormat.JPEG, 60, stream);
     tagBitmap.recycle();
