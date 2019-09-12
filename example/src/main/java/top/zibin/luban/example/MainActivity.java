@@ -170,8 +170,10 @@ public class MainActivity extends AppCompatActivity {
         }));
   }
 
+  private Luban mLuban;//Rx不在意了
   private <T> void withLs(final List<T> photos) {
-    Luban.with(this)
+    final int[] i = {0};
+    mLuban = Luban.with(this)
         .load(photos)
         .ignoreBy(100)
         .setTargetDir(getPath())
@@ -197,12 +199,19 @@ public class MainActivity extends AppCompatActivity {
         })
         .setCompressListener(new OnCompressListener() {
           @Override
-          public void onStart() { }
+          public void onStart() {
+            if(i[0] ==0){
+              //这次压缩完了就不再压缩，释放资源
+              mLuban.setContinue(false);
+            }
+          }
 
           @Override
           public void onSuccess(File file) {
             Log.i(TAG, file.getAbsolutePath());
+            Log.i(TAG, "compress img :"+i[0]);
             showResult(originPhotos, file);
+            i[0]++;
           }
 
           @Override
