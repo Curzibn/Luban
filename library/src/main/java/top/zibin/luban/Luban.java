@@ -116,6 +116,7 @@ public class Luban implements Handler.Callback {
   /**
    * start asynchronous compress thread
    */
+  private boolean mIsContinue = true;
   private void launch(final Context context) {
     if (mStreamProviders == null || mStreamProviders.size() == 0 && mCompressListener != null) {
       mCompressListener.onError(new NullPointerException("image file cannot be null"));
@@ -130,6 +131,9 @@ public class Luban implements Handler.Callback {
         @Override
         public void run() {
           try {
+            if(!mIsContinue){//线程空转，资源释放
+              return;
+            }
             mHandler.sendMessage(mHandler.obtainMessage(MSG_COMPRESS_START));
 
             File result = compress(context, path);
@@ -143,6 +147,10 @@ public class Luban implements Handler.Callback {
 
       iterator.remove();
     }
+  }
+
+  public void setContinue(boolean isContinue){
+    mIsContinue = isContinue;
   }
 
   /**
@@ -229,6 +237,7 @@ public class Luban implements Handler.Callback {
     private OnCompressListener mCompressListener;
     private CompressionPredicate mCompressionPredicate;
     private List<InputStreamProvider> mStreamProviders;
+    private Luban mLuban;
 
     Builder(Context context) {
       this.context = context;
@@ -236,7 +245,7 @@ public class Luban implements Handler.Callback {
     }
 
     private Luban build() {
-      return new Luban(this);
+      return mLuban = new Luban(this);
     }
 
     public Builder load(InputStreamProvider inputStreamProvider) {
@@ -358,8 +367,9 @@ public class Luban implements Handler.Callback {
     /**
      * begin compress image with asynchronous
      */
-    public void launch() {
+    public Luban launch() {
       build().launch(context);
+      return mLuban;
     }
 
     public File get(final String path) throws IOException {
