@@ -43,6 +43,7 @@ public class Luban implements Handler.Callback {
     this.mCompressListener = builder.mCompressListener;
     this.mLeastCompressSize = builder.mLeastCompressSize;
     this.mCompressionPredicate = builder.mCompressionPredicate;
+    this.focusAlpha = builder.focusAlpha;
     mHandler = new Handler(Looper.getMainLooper(), this);
   }
 
