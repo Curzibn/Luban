@@ -29,6 +29,7 @@ public class Luban implements Handler.Callback {
   private String mTargetDir;
   private boolean focusAlpha;
   private int mLeastCompressSize;
+  private int quality;
   private OnRenameListener mRenameListener;
   private OnCompressListener mCompressListener;
   private CompressionPredicate mCompressionPredicate;
@@ -44,6 +45,7 @@ public class Luban implements Handler.Callback {
     this.mLeastCompressSize = builder.mLeastCompressSize;
     this.mCompressionPredicate = builder.mCompressionPredicate;
     this.focusAlpha = builder.focusAlpha;
+    this.quality = builder.quality;
     mHandler = new Handler(Looper.getMainLooper(), this);
   }
 
@@ -151,7 +153,7 @@ public class Luban implements Handler.Callback {
    */
   private File get(InputStreamProvider input, Context context) throws IOException {
     try {
-      return new Engine(input, getImageCacheFile(context, Checker.SINGLE.extSuffix(input)), focusAlpha).compress();
+      return new Engine(input, getImageCacheFile(context, Checker.SINGLE.extSuffix(input)), focusAlpha,quality).compress();
     } finally {
       input.close();
     }
@@ -190,13 +192,13 @@ public class Luban implements Handler.Callback {
     if (mCompressionPredicate != null) {
       if (mCompressionPredicate.apply(path.getPath())
           && Checker.SINGLE.needCompress(mLeastCompressSize, path.getPath())) {
-        result = new Engine(path, outFile, focusAlpha).compress();
+        result = new Engine(path, outFile, focusAlpha, quality).compress();
       } else {
         result = new File(path.getPath());
       }
     } else {
       result = Checker.SINGLE.needCompress(mLeastCompressSize, path.getPath()) ?
-          new Engine(path, outFile, focusAlpha).compress() :
+          new Engine(path, outFile, focusAlpha, quality).compress() :
           new File(path.getPath());
     }
 
@@ -226,6 +228,7 @@ public class Luban implements Handler.Callback {
     private String mTargetDir;
     private boolean focusAlpha;
     private int mLeastCompressSize = 100;
+    private int quality = 60;
     private OnRenameListener mRenameListener;
     private OnCompressListener mCompressListener;
     private CompressionPredicate mCompressionPredicate;
@@ -355,6 +358,14 @@ public class Luban implements Handler.Callback {
       return this;
     }
 
+
+    /**
+     * compress quality
+     */
+    public Builder setQuality(int quality) {
+      this.quality = quality;
+      return this;
+    }
 
     /**
      * begin compress image with asynchronous
