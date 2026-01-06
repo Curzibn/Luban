@@ -51,7 +51,7 @@ class CompressionCalculator {
             targetLong = longSide
         }
 
-        var currentPixels = targetShort.toLong() * targetLong
+        val currentPixels = targetShort.toLong() * targetLong
         if (currentPixels > capPixels) {
             val scale = floor(sqrt(capPixels.toDouble() / currentPixels) * 1000) / 1000.0
             targetShort = (targetShort * scale).toInt()
@@ -60,7 +60,7 @@ class CompressionCalculator {
 
         targetShort = (targetShort / 2) * 2
         targetLong = (targetLong / 2) * 2
-        
+
         targetShort = maxOf(2, targetShort)
         targetLong = maxOf(2, targetLong)
 
@@ -71,21 +71,21 @@ class CompressionCalculator {
         }
 
         val finalPixels = finalW.toLong() * finalH
-        
-        var factor = when {
+
+        val factor = when {
             finalPixels < 500_000L -> 0.0005
             finalPixels < 1_000_000L -> 0.00015
             finalPixels < 3_000_000L -> 0.00011
             else -> 0.000025
         }
-        
+
         var estimatedSize = (finalPixels * factor).toInt()
         estimatedSize = maxOf(20, estimatedSize)
-        
+
         if (ratio < 0.2 && estimatedSize < 400) {
             estimatedSize = maxOf(estimatedSize, 250)
         }
-        
+
         val isLongImage = ratio <= 0.5
         val targetSizeKb = if (isLongImage) estimatedSize else null
 

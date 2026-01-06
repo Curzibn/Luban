@@ -170,13 +170,18 @@ If this project has been helpful to you, please consider supporting my work thro
 
 <div align="center">
 
-**Alipay**
-
+<table>
+<tr>
+<td align="center">
+<strong>Alipay</strong><br>
 <img src="images/alipay.png" width="300" alt="Alipay QR Code" />
-
-**WeChat**
-
+</td>
+<td align="center">
+<strong>WeChat</strong><br>
 <img src="images/wechat.png" width="300" alt="WeChat QR Code" />
+</td>
+</tr>
+</table>
 
 </div>
 

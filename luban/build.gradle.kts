@@ -1,24 +1,9 @@
 @file:Suppress("UnstableApiUsage")
 
-import com.vanniktech.maven.publish.SonatypeHost
-import java.util.Properties
-
 plugins {
     alias(libs.plugins.android.library)
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.maven.publish)
-}
-
-// 尝试加载 local.properties 中的配置到项目中
-val localProperties = Properties()
-val localPropertiesFile = rootProject.file("local.properties")
-if (localPropertiesFile.exists()) {
-    localPropertiesFile.inputStream().use { localProperties.load(it) }
-    localProperties.forEach { key, value ->
-        if (project.findProperty(key.toString()) == null) {
-            project.extensions.extraProperties[key.toString()] = value
-        }
-    }
 }
 
 val libraryVersion = "2.0.0"
@@ -29,7 +14,6 @@ android {
 
     defaultConfig {
         minSdk = 21
-
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         consumerProguardFiles("consumer-rules.pro")
 
@@ -92,10 +76,8 @@ dependencies {
 }
 
 mavenPublishing {
-    // 配置发布到 Sonatype Central Portal (central.sonatype.com)
-    publishToMavenCentral(SonatypeHost.CENTRAL_PORTAL)
+    publishToMavenCentral()
 
-    // 自动签名配置
     signAllPublications()
 
     coordinates("top.zibin", "luban", libraryVersion)
@@ -104,14 +86,15 @@ mavenPublishing {
         name.set("Luban")
         description.set("Luban（鲁班） —— Android图片压缩工具，仿微信朋友圈压缩策略。")
         url.set("https://github.com/Curzibn/Luban")
-        
+
         licenses {
             license {
                 name.set("The Apache License, Version 2.0")
                 url.set("http://www.apache.org/licenses/LICENSE-2.0.txt")
+                distribution.set("http://www.apache.org/licenses/LICENSE-2.0.txt")
             }
         }
-        
+
         developers {
             developer {
                 id.set("Curzibn")
@@ -119,11 +102,11 @@ mavenPublishing {
                 email.set("a@zibin.top")
             }
         }
-        
+
         scm {
-            connection.set("scm:git:github.com/Curzibn/Luban.git")
-            developerConnection.set("scm:git:ssh://github.com/Curzibn/Luban.git")
-            url.set("https://github.com/Curzibn/Luban/tree/master")
+            connection.set("scm:git:git://github.com/Curzibn/Luban.git")
+            developerConnection.set("scm:git:ssh://git@github.com/Curzibn/Luban.git")
+            url.set("https://github.com/Curzibn/Luban")
         }
     }
 }

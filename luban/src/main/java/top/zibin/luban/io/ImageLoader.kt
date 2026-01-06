@@ -10,6 +10,7 @@ import kotlinx.coroutines.withContext
 import java.io.File
 import java.io.FileInputStream
 import java.io.InputStream
+import androidx.core.graphics.scale
 
 data class ImageData(
     val bitmap: Bitmap,
@@ -96,25 +97,19 @@ class ImageLoader {
         options.inSampleSize = calculateInSampleSize(options, finalWidth, finalHeight)
         options.inJustDecodeBounds = false
         options.inPreferredConfig = Bitmap.Config.RGB_565
-        options.inDither = false
         options.inScaled = false
 
         return openStream()?.use { newStream ->
             var bitmap = BitmapFactory.decodeStream(newStream, null, options)
-            
+
             if (bitmap != null && (bitmap.width > finalWidth || bitmap.height > finalHeight)) {
-                val scaledBitmap = Bitmap.createScaledBitmap(
-                    bitmap,
-                    finalWidth,
-                    finalHeight,
-                    true
-                )
+                val scaledBitmap = bitmap.scale(finalWidth, finalHeight)
                 if (scaledBitmap != bitmap) {
                     bitmap.recycle()
                     bitmap = scaledBitmap
                 }
             }
-            
+
             bitmap
         }
     }
@@ -138,7 +133,7 @@ class ImageLoader {
 
         val pixelCount = (width.toLong() * height) / (inSampleSize * inSampleSize)
         val maxPixels = 16_000_000L
-        
+
         if (pixelCount > maxPixels) {
             val scale = kotlin.math.sqrt(pixelCount.toDouble() / maxPixels.toDouble())
             inSampleSize = (inSampleSize * scale).toInt().coerceAtLeast(1)
@@ -199,11 +194,11 @@ class ImageLoader {
         val rotatedBitmap = Bitmap.createBitmap(
             bitmap, 0, 0, bitmap.width, bitmap.height, matrix, true
         )
-        
+
         if (rotatedBitmap != bitmap) {
             bitmap.recycle()
         }
-        
+
         return rotatedBitmap
     }
 }
