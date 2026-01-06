@@ -1,0 +1,124 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:padding="16dp">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:gravity="center_horizontal">
+
+        <Button
+            android:id="@+id/btn_select_image"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/select_image" />
+
+        <Button
+            android:id="@+id/btn_compress_image"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/compress_image"
+            android:enabled="false" />
+            
+        <Button
+            android:id="@+id/btn_batch_compress"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/batch_compress" />
+
+        <TextView
+            android:id="@+id/tv_status"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:textColor="#FF0000"
+            android:gravity="center" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:layout_marginTop="16dp"
+            android:baselineAligned="false">
+
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:orientation="vertical"
+                android:gravity="center">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/original_image"
+                    android:textStyle="bold" />
+
+                <ImageView
+                    android:id="@+id/iv_original"
+                    android:layout_width="match_parent"
+                    android:layout_height="200dp"
+                    android:scaleType="fitCenter"
+                    android:background="#EEEEEE"
+                    android:layout_marginTop="8dp" />
+
+                <TextView
+                    android:id="@+id/tv_original_size"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="4dp"
+                    tools:text="大小: 2.5 MB" />
+
+                <TextView
+                    android:id="@+id/tv_original_dimens"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    tools:text="尺寸: 1920 x 1080" />
+            </LinearLayout>
+
+            <Space
+                android:layout_width="16dp"
+                android:layout_height="wrap_content" />
+
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:orientation="vertical"
+                android:gravity="center">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/compressed_image"
+                    android:textStyle="bold" />
+
+                <ImageView
+                    android:id="@+id/iv_compressed"
+                    android:layout_width="match_parent"
+                    android:layout_height="200dp"
+                    android:scaleType="fitCenter"
+                    android:background="#EEEEEE"
+                    android:layout_marginTop="8dp" />
+
+                <TextView
+                    android:id="@+id/tv_compressed_size"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="4dp"
+                    tools:text="大小: 500 KB" />
+
+                <TextView
+                    android:id="@+id/tv_compressed_dimens"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    tools:text="尺寸: 1920 x 1080" />
+            </LinearLayout>
+        </LinearLayout>
+
+    </LinearLayout>
+</ScrollView>

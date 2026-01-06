@@ -1,0 +1,13 @@
+<resources>
+    <string name="app_name">Luban Java Sample</string>
+    <string name="select_image">选择图片</string>
+    <string name="compress_image">压缩图片</string>
+    <string name="original_image">原图</string>
+    <string name="compressed_image">压缩后</string>
+    <string name="file_size">大小: %s</string>
+    <string name="image_size">尺寸: %d x %d</string>
+    <string name="compress_success">压缩成功</string>
+    <string name="compress_failed">压缩失败: %s</string>
+    <string name="batch_compress">批量压缩</string>
+    <string name="batch_compress_result">批量压缩完成: 总计 %d, 成功 %d, 失败 %d</string>
+</resources>
