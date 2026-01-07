@@ -6,28 +6,28 @@
 
 [English](README_EN.md) | [中文](README.md)
 
-Luban 2 — An efficient and concise Android image compression library that pixel-perfectly replicates the compression strategy of WeChat Moments.
+Luban 2 — An efficient and concise Android image compression library that closely replicates the compression strategy of WeChat Moments.
 
 # 📖 Project Description
 
-Image handling is an unavoidable element in `App` development. With the increasing resolution of mobile cameras, image compression has become a critical issue. While there are many articles on simple cropping and compression, controlling the exact parameters is difficult—cropping too much results in tiny images, while over-compressing leads to poor display quality.
+Images are an essential part of app development. With the increasing resolution of mobile cameras, image compression has become a critical issue. While there are many articles on simple cropping and compression, choosing the right crop and compression levels is tricky—cropping too much results in tiny images, while over-compressing leads to poor display quality.
 
-Naturally, one wonders how the industry giant "WeChat" handles this. `Luban` was developed by reverse-engineering the compression algorithm used by WeChat Moments, achieved by sending nearly 100 images of varying resolutions and comparing the originals with the compressed versions.
+Naturally, one wonders how the industry giant "WeChat" handles this. `Luban` was derived by reverse-engineering WeChat Moments’ behavior: we sent nearly 100 images with different resolutions and compared the originals with WeChat’s outputs to infer the compression strategy.
 
-Because it is a reverse-engineered estimation, the results cannot be exactly identical to WeChat's, but they are very close. See the comparison below!
+Since this behavior is inferred from observation, the results may not match WeChat exactly, but they are very close. See the comparison below!
 
-This library is the **Kotlin refactored version** of `Luban`. While upgrading the core algorithm, it has been deeply optimized using **Kotlin Coroutines** and **TurboJPEG**. The new algorithm is more robust and efficient than the original, providing more efficient asynchronous processing and superior compression quality.
+This library is the **Kotlin refactored version** of `Luban`. While upgrading the core algorithm, it is optimized with **Kotlin Coroutines** and **TurboJPEG** for faster processing and better output quality. The new algorithm is more robust and efficient than the original, providing more efficient asynchronous processing and superior compression quality.
 
 # 📊 Effects & Comparison
 
-| Image Type | Original | Luban | Wechat |
+| Image Type | Original | Luban | WeChat |
 | :--- | :--- | :--- | :--- |
-| **Standard Photo** | 3024*4032, 5.10MB | 1440*1920, 305KB | 1440*1920, 303KB |
-| **High-Res Photo** | 4000*6000, 12.10MB | 1440*2160, 318KB | 1440*2160, 305KB |
-| **2K Screenshot** | 1440*3200, 2.10MB | 1440*3200, 148KB | 1440*3200, 256KB |
-| **Long Screenshot** | 1242*22080, 6.10MB | 758*13490, 290KB | 744*13129, 256KB |
-| **Panorama** | 12000*5000, 8.10MB | 1440*600, 126KB | 1440*600, 123KB |
-| **Design Draft** | 6000*6000, 6.90MB | 1440*1440, 263KB | 1440*1440, 279KB |
+| **Standard Photo** | 3024×4032, 5.10MB | 1440×1920, 305KB | 1440×1920, 303KB |
+| **High-Res Photo** | 4000×6000, 12.10MB | 1440×2160, 318KB | 1440×2160, 305KB |
+| **2K Screenshot** | 1440×3200, 2.10MB | 1440×3200, 148KB | 1440×3200, 256KB |
+| **Long Screenshot** | 1242×22080, 6.10MB | 758×13490, 290KB | 744×13129, 256KB |
+| **Panorama** | 12000×5000, 8.10MB | 1440×600, 126KB | 1440×600, 123KB |
+| **Design Draft** | 6000×6000, 6.90MB | 1440×1440, 263KB | 1440×1440, 279KB |
 
 ## 🔬 Core Algorithm Features
 
@@ -37,8 +37,8 @@ This library uses an **Adaptive Unified Image Compression** algorithm that dynam
 
 - **High-Definition Baseline (1440p)**: Uses 1440px as the default short-side baseline, ensuring visual clarity on modern 2K/4K displays
 - **Panorama Wall Strategy**: Automatically identifies ultra-wide panoramas (long side >10800px), locks the long side to 1440px while preserving the full field of view
-- **Mega-Pixel Trap**: Automatically applies 1/4 downsampling to images exceeding 41MP (4096万 pixels)
-- **Long Image Memory Protection**: Establishes a 10.24MP pixel cap for ultra-long screenshots, preventing OOM through proportional scaling
+- **Mega-Pixel Trap**: Automatically applies 1/4 downsampling to images exceeding 41 megapixels (≈40.96 MP)
+- **Long Image Memory Protection**: Establishes a 10.24MP pixel cap for ultra-long screenshots, reducing the risk of out-of-memory (OOM) errors through proportional scaling
 
 ### Adaptive Bitrate Control
 
@@ -49,11 +49,13 @@ This library uses an **Adaptive Unified Image Compression** algorithm that dynam
 
 ### Robustness Guarantees
 
-- **Inflation Fallback**: Automatically returns the original image if compressed size exceeds original, ensuring no "negative optimization"
-- **Smart Format Passthrough**: Preserves transparency for small PNG files, auto-converts large PNG files to JPEG
+- **Inflation Fallback**: Automatically returns the original image if compressed size exceeds original, avoiding making files larger after compression
+- **Smart Format Passthrough**: Preserves transparency for small PNG files, and converts large PNG files to JPEG when appropriate
 - **Input Defense**: Safely handles extreme resolution inputs (0, negative, 1px, etc.), preventing crashes
 
 # 📦 Import
+
+Make sure `mavenCentral()` is included in your repositories.
 
 Add the dependency to your module's `build.gradle.kts` file:
 
@@ -103,6 +105,77 @@ lifecycleScope.launch {
             // ...
         }
     }
+}
+```
+
+#### Compress a Single File Object
+
+```kotlin
+lifecycleScope.launch {
+    val inputFile: File = ...
+    val outputDir = context.cacheDir
+
+    Luban.compress(inputFile, outputDir)
+        .onSuccess { file ->
+            Log.d("Luban", "Compressed: ${file.absolutePath}")
+        }
+        .onFailure { error ->
+            Log.e("Luban", "Error: ${error.message}")
+        }
+}
+```
+
+#### Compress to a Specific Output File
+
+```kotlin
+lifecycleScope.launch {
+    val inputFile: File = ...
+    val outputFile = File(context.cacheDir, "custom_output.jpg")
+
+    Luban.compressToFile(inputFile, outputFile)
+        .onSuccess { file ->
+            Log.d("Luban", "Compressed to: ${file.absolutePath}")
+        }
+        .onFailure { error ->
+            Log.e("Luban", "Error: ${error.message}")
+        }
+}
+```
+
+#### Compress Multiple File Objects Concurrently
+
+```kotlin
+lifecycleScope.launch {
+    val files: List<File> = ...
+    val outputDir = context.cacheDir
+
+    val results = Luban.compress(files, outputDir)
+
+    results.forEach { result ->
+        result.onSuccess { file ->
+            Log.d("Luban", "Compressed: ${file.absolutePath}")
+        }
+        .onFailure { error ->
+            Log.e("Luban", "Error: ${error.message}")
+        }
+    }
+}
+```
+
+#### Use in a Custom CoroutineScope
+
+```kotlin
+val scope = CoroutineScope(Dispatchers.Main + SupervisorJob())
+
+scope.launch {
+    val inputUri: Uri = ...
+    val outputDir = context.cacheDir
+
+    Luban.compress(context, inputUri, outputDir)
+        .onSuccess { file ->
+        }
+        .onFailure { error ->
+        }
 }
 ```
 
