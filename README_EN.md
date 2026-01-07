@@ -1,4 +1,4 @@
-# Luban
+# Luban 2
 
 [![License](https://img.shields.io/badge/license-Apache%202.0-blue.svg)](LICENSE)
 [![Maven Central](https://img.shields.io/maven-central/v/top.zibin/luban.svg?label=Maven%20Central)](https://search.maven.org/search?q=g:top.zibin%20a:luban)
