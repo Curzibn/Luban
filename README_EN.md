@@ -172,10 +172,11 @@ If this project has been helpful to you, please consider supporting my work thro
 
 <table>
 <tr>
-<td align="center" style="padding-right: 20px;">
+<td align="center">
 <img src="images/alipay.png" width="300" alt="Alipay QR Code" />
 </td>
-<td align="center" style="padding-left: 20px;">
+<td width="50"></td>
+<td align="center">
 <img src="images/wechat.png" width="300" alt="WeChat QR Code" />
 </td>
 </tr>
