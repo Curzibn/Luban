@@ -281,12 +281,10 @@ Luban.with(context)
 
 <table>
 <tr>
-<td align="center">
-<strong>支付宝</strong><br>
+<td align="center" style="padding-right: 20px;">
 <img src="images/alipay.png" width="300" alt="支付宝收款码" />
 </td>
-<td align="center">
-<strong>微信</strong><br>
+<td align="center" style="padding-left: 20px;">
 <img src="images/wechat.png" width="300" alt="微信收款码" />
 </td>
 </tr>
