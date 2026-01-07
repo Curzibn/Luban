@@ -6,7 +6,7 @@
 
 [English](README_EN.md) | [中文](README.md)
 
-`Luban` — An `Android` image compression tool, mimicking the compression strategy of WeChat Moments.
+Luban 2 — An efficient and concise Android image compression library that pixel-perfectly replicates the compression strategy of WeChat Moments.
 
 # 📖 Project Description
 

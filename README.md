@@ -6,7 +6,7 @@
 
 [中文](README.md) | [English](README_EN.md)
 
-`Luban`（鲁班） —— `Android`图片压缩工具，仿微信朋友圈压缩策略。
+Luban 2（鲁班 2） —— 高效简洁的 Android 图片压缩工具库，像素级还原微信朋友圈压缩策略。
 
 ## 📑 目录
 
