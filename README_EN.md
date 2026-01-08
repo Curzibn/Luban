@@ -8,6 +8,18 @@
 
 Luban 2 — An efficient and concise Android image compression library that closely replicates the compression strategy of WeChat Moments.
 
+## 📑 Table of Contents
+
+- [📖 Project Description](#-project-description)
+- [📊 Effects & Comparison](#-effects--comparison)
+  - [🔬 Core Algorithm Features](#-core-algorithm-features)
+- [📦 Import](#-import)
+- [💻 Usage](#-usage)
+  - [⚡ Kotlin (Coroutines)](#-kotlin-coroutines)
+  - [☕ Java / Builder Pattern](#-java--builder-pattern)
+- [☕ Donation](#-donation)
+- [📄 License](#-license)
+
 # 📖 Project Description
 
 Images are an essential part of app development. With the increasing resolution of mobile cameras, image compression has become a critical issue. While there are many articles on simple cropping and compression, choosing the right crop and compression levels is tricky—cropping too much results in tiny images, while over-compressing leads to poor display quality.
