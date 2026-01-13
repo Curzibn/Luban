@@ -73,7 +73,7 @@ Add the dependency to your module's `build.gradle.kts` file:
 
 ```kotlin
 dependencies {
-    implementation("top.zibin:luban:2.0.0")
+    implementation("top.zibin:luban:2.0.1")
 }
 ```
 
@@ -81,113 +81,109 @@ dependencies {
 
 ### ⚡ Kotlin (Coroutines)
 
-The most idiomatic way to use the library in Kotlin is via `suspend` functions.
+Luban provides three ways to use the library in Kotlin, from most idiomatic to traditional:
 
-#### Compress a Single File
+#### 1. DSL Style (Recommended)
 
-```kotlin
-lifecycleScope.launch {
-    val inputUri: Uri = ... // Your image Uri
-    val outputDir = context.cacheDir
-    
-    Luban.compress(context, inputUri, outputDir)
-        .onSuccess { file ->
-            // Compression successful, 'file' is the compressed image
-            Log.d("Luban", "Compressed: ${file.absolutePath}")
-        }
-        .onFailure { error ->
-            // Handle error
-            Log.e("Luban", "Error: ${error.message}")
-        }
-}
-```
-
-#### Compress Multiple Files Concurrently
+The most Kotlin-idiomatic way is using the DSL API:
 
 ```kotlin
 lifecycleScope.launch {
-    val uris: List<Uri> = ... 
-    val outputDir = context.cacheDir
-
-    // Returns a List<Result<File>>
-    val results = Luban.compress(context, uris, outputDir)
+    val results = luban(context) {
+        outputDir = File(context.cacheDir, "compressed")
+        
+        compress(imageUri1)
+        compress(imageUri2)
+        compress(imageFile1)
+        compress(listOf(imageFile2, imageFile3))
+        compress(listOf(imageUri3, imageUri4))
+    }
     
     results.forEach { result ->
-        result.onSuccess { file -> 
-            // ...
+        result.getOrNull()?.let { file ->
+            Log.d("Luban", "Compressed: ${file.absolutePath}")
+        } ?: run {
+            val error = result.exceptionOrNull()
+            Log.e("Luban", "Error: ${error?.message}")
         }
     }
 }
 ```
 
-#### Compress a Single File Object
+**Note:** 
+- For `Uri` compression, if `outputDir` is not specified, it defaults to `context.cacheDir`. For `File` compression, `outputDir` must be explicitly set.
+- The DSL configuration is declarative, so the order of configuration does not affect the result. You can set `outputDir` before calling `compress()`, or call `compress()` before setting `outputDir`.
+
+#### 2. Extension Functions
+
+You can also use extension functions for a more fluent API:
 
 ```kotlin
 lifecycleScope.launch {
-    val inputFile: File = ...
-    val outputDir = context.cacheDir
-
-    Luban.compress(inputFile, outputDir)
-        .onSuccess { file ->
-            Log.d("Luban", "Compressed: ${file.absolutePath}")
-        }
-        .onFailure { error ->
-            Log.e("Luban", "Error: ${error.message}")
-        }
-}
-```
-
-#### Compress to a Specific Output File
-
-```kotlin
-lifecycleScope.launch {
-    val inputFile: File = ...
-    val outputFile = File(context.cacheDir, "custom_output.jpg")
-
-    Luban.compressToFile(inputFile, outputFile)
-        .onSuccess { file ->
-            Log.d("Luban", "Compressed to: ${file.absolutePath}")
-        }
-        .onFailure { error ->
-            Log.e("Luban", "Error: ${error.message}")
-        }
-}
-```
-
-#### Compress Multiple File Objects Concurrently
-
-```kotlin
-lifecycleScope.launch {
-    val files: List<File> = ...
-    val outputDir = context.cacheDir
-
-    val results = Luban.compress(files, outputDir)
-
-    results.forEach { result ->
-        result.onSuccess { file ->
-            Log.d("Luban", "Compressed: ${file.absolutePath}")
-        }
-        .onFailure { error ->
-            Log.e("Luban", "Error: ${error.message}")
-        }
+    val result = imageUri.compressTo(context)
+    
+    result.getOrElse { error ->
+        Log.e("Luban", "Error: ${error.message}")
+        return@launch
+    }.let { file ->
+        Log.d("Luban", "Compressed: ${file.absolutePath}")
     }
 }
 ```
 
-#### Use in a Custom CoroutineScope
+**Compress a single file:**
+```kotlin
+val result = inputFile.compressTo(outputDir)
+```
 
+**Compress to a specific output file:**
+```kotlin
+val result = inputFile.compressToFile(outputFile)
+```
+
+**Compress multiple files:**
+```kotlin
+val results = fileList.compressTo(outputDir)
+val results = uriList.compressTo(context)
+```
+
+#### 3. Traditional Static Methods
+
+The traditional way using static methods:
+
+```kotlin
+lifecycleScope.launch {
+    val result = Luban.compress(context, inputUri, outputDir)
+    
+    result.getOrElse { error ->
+        Log.e("Luban", "Error: ${error.message}")
+        return@launch
+    }.let { file ->
+        Log.d("Luban", "Compressed: ${file.absolutePath}")
+    }
+}
+```
+
+**Available methods:**
+- `Luban.compress(context, input: Uri, outputDir: File = context.cacheDir): Result<File>`
+- `Luban.compress(input: File, outputDir: File): Result<File>`
+- `Luban.compressToFile(input: File, output: File): Result<File>`
+- `Luban.compress(context, inputs: List<Uri>, outputDir: File = context.cacheDir): List<Result<File>>`
+- `Luban.compress(inputs: List<File>, outputDir: File): List<Result<File>>`
+
+**Use in a custom CoroutineScope:**
 ```kotlin
 val scope = CoroutineScope(Dispatchers.Main + SupervisorJob())
 
 scope.launch {
-    val inputUri: Uri = ...
-    val outputDir = context.cacheDir
-
-    Luban.compress(context, inputUri, outputDir)
-        .onSuccess { file ->
-        }
-        .onFailure { error ->
-        }
+    val result = Luban.compress(context, inputUri)
+    
+    result.getOrElse { error ->
+        // Handle error
+        return@launch
+    }.let { file ->
+        // Handle success
+    }
 }
 ```
 

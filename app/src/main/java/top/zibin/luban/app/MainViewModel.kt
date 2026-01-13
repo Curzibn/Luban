@@ -13,6 +13,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import top.zibin.luban.api.Luban
+import top.zibin.luban.api.luban
 import top.zibin.luban.algorithm.CompressionCalculator
 import top.zibin.luban.algorithm.CompressionTarget
 import java.io.File
@@ -94,19 +95,30 @@ class MainViewModel : ViewModel() {
 
         viewModelScope.launch(Dispatchers.IO) {
             _uiState.update { it.copy(isCompressing = true, error = null) }
-            
+
             val outputDir = File(context.cacheDir, "luban_compressed")
             if (!outputDir.exists()) {
                 outputDir.mkdirs()
             }
 
-            val result = Luban.compress(context, originalUri, outputDir)
-            
-            result.onSuccess { file ->
-                val options = android.graphics.BitmapFactory.Options().apply {
+            val results = luban(context) {
+                this.outputDir = outputDir
+                compress(originalUri)
+            }
+
+            val result = results.firstOrNull()
+                ?: Result.failure(IllegalStateException("No compression result"))
+
+            result.getOrElse { error ->
+                _uiState.update {
+                    it.copy(isCompressing = false, error = "压缩失败: ${error.message}")
+                }
+                return@launch
+            }.let { file ->
+                val options = BitmapFactory.Options().apply {
                     inJustDecodeBounds = true
                 }
-                android.graphics.BitmapFactory.decodeFile(file.absolutePath, options)
+                BitmapFactory.decodeFile(file.absolutePath, options)
 
                 _uiState.update {
                     it.copy(
@@ -119,10 +131,6 @@ class MainViewModel : ViewModel() {
                         )
                     )
                 }
-            }.onFailure { error ->
-                _uiState.update {
-                    it.copy(isCompressing = false, error = "压缩失败: ${error.message}")
-                }
             }
         }
     }
@@ -134,16 +142,16 @@ class MainViewModel : ViewModel() {
     fun closeImageViewer() {
         _uiState.update { it.copy(showImageViewer = false, viewingImage = null) }
     }
-    
+
     fun initStorageDirs(context: Context) {
         viewModelScope.launch(Dispatchers.IO) {
             val appStorageDir = getAppStorageDir(context)
             val outputStorageDir = getOutputStorageDir(context)
-            
+
             appStorageDir?.let { dir ->
                 copyAssetsToStorage(context, dir)
             }
-            
+
             _uiState.update {
                 it.copy(
                     appStorageDir = appStorageDir?.absolutePath,
@@ -152,35 +160,35 @@ class MainViewModel : ViewModel() {
             }
         }
     }
-    
+
     private fun copyAssetsToStorage(context: Context, targetDir: File) {
         try {
             val assetManager = context.assets
             val assetFiles = assetManager.list("test_images") ?: emptyArray()
-            
+
             if (assetFiles.isEmpty()) {
                 Log.d("AssetCopy", "assets/test_images 目录为空，跳过复制")
                 return
             }
-            
+
             val imageExtensions = setOf(".jpg", ".jpeg", ".png", ".webp", ".bmp")
-            
+
             assetFiles.forEach { fileName ->
                 val lowerFileName = fileName.lowercase()
-                
+
                 val isImageFile = imageExtensions.any { lowerFileName.endsWith(it) }
                 if (!isImageFile) {
                     Log.d("AssetCopy", "跳过非图片文件: $fileName")
                     return@forEach
                 }
-                
+
                 val targetFile = File(targetDir, fileName)
-                
+
                 if (targetFile.exists()) {
                     Log.d("AssetCopy", "文件已存在，跳过: $fileName")
                     return@forEach
                 }
-                
+
                 try {
                     assetManager.open("test_images/$fileName").use { input ->
                         FileOutputStream(targetFile).use { output ->
@@ -196,7 +204,7 @@ class MainViewModel : ViewModel() {
             Log.e("AssetCopy", "复制assets图片失败", e)
         }
     }
-    
+
     private fun getAppStorageDir(context: Context): File? {
         val externalFilesDir = context.getExternalFilesDir(null)?.parentFile
         return externalFilesDir?.let {
@@ -207,7 +215,7 @@ class MainViewModel : ViewModel() {
             appDir
         }
     }
-    
+
     private fun getOutputStorageDir(context: Context): File? {
         val externalFilesDir = context.getExternalFilesDir(null)?.parentFile
         return externalFilesDir?.let {
@@ -218,39 +226,39 @@ class MainViewModel : ViewModel() {
             outputDir
         }
     }
-    
+
     fun batchCompressImages(context: Context) {
         viewModelScope.launch(Dispatchers.IO) {
             val inputDir = getAppStorageDir(context)
             val outputDir = getOutputStorageDir(context)
-            
+
             if (inputDir == null || outputDir == null) {
-                _uiState.update { 
-                    it.copy(error = "无法访问存储目录，请检查权限") 
+                _uiState.update {
+                    it.copy(error = "无法访问存储目录，请检查权限")
                 }
                 return@launch
             }
-            
+
             if (!inputDir.exists()) {
-                _uiState.update { 
-                    it.copy(error = "输入目录不存在: ${inputDir.absolutePath}") 
+                _uiState.update {
+                    it.copy(error = "输入目录不存在: ${inputDir.absolutePath}")
                 }
                 return@launch
             }
-            
+
             val imageFiles = inputDir.listFiles { file ->
                 file.isFile && (file.name.endsWith(".jpg", ignoreCase = true)
-                    || file.name.endsWith(".jpeg", ignoreCase = true)
-                    || file.name.endsWith(".png", ignoreCase = true))
+                        || file.name.endsWith(".jpeg", ignoreCase = true)
+                        || file.name.endsWith(".png", ignoreCase = true))
             } ?: emptyArray()
-            
+
             if (imageFiles.isEmpty()) {
-                _uiState.update { 
-                    it.copy(error = "输入目录中没有找到图片文件: ${inputDir.absolutePath}") 
+                _uiState.update {
+                    it.copy(error = "输入目录中没有找到图片文件: ${inputDir.absolutePath}")
                 }
                 return@launch
             }
-            
+
             _uiState.update {
                 it.copy(
                     isBatchCompressing = true,
@@ -264,14 +272,18 @@ class MainViewModel : ViewModel() {
             val inputList = imageFiles.toList()
             Log.d("BatchCompress", "开始批量压缩，共 ${inputList.size} 张图片")
 
-            val results = Luban.compress(inputList, outputDir)
+            val results = luban(context) {
+                this.outputDir = outputDir
+                compress(inputList)
+            }
 
             var successCount = 0
             var failedCount = 0
 
             results.forEachIndexed { index, result ->
                 val inputFile = inputList[index]
-                result.onSuccess { compressedFile ->
+
+                result.getOrNull()?.let { compressedFile ->
                     successCount++
 
                     val options = BitmapFactory.Options().apply {
@@ -293,15 +305,16 @@ class MainViewModel : ViewModel() {
                     Log.d(
                         "BatchCompress",
                         "[${index + 1}/${inputList.size}] 压缩成功: " +
-                            "文件名=${compressedFile.name}, " +
-                            "分辨率=${width}×${height}, " +
-                            "文件大小=${sizeStr} (${fileSize} bytes)"
+                                "文件名=${compressedFile.name}, " +
+                                "分辨率=${width}×${height}, " +
+                                "文件大小=${sizeStr} (${fileSize} bytes)"
                     )
-                }.onFailure { error ->
+                } ?: run {
                     failedCount++
+                    val error = result.exceptionOrNull()
                     Log.e(
                         "BatchCompress",
-                        "[${index + 1}/${inputList.size}] 压缩失败: ${inputFile.name}, 错误=${error.message}"
+                        "[${index + 1}/${inputList.size}] 压缩失败: ${inputFile.name}, 错误=${error?.message}"
                     )
                 }
 
@@ -328,11 +341,16 @@ class MainViewModel : ViewModel() {
             }
         }
     }
-    
+
     fun formatFileSize(size: Long): String {
         if (size <= 0) return "0 B"
         val units = arrayOf("B", "KB", "MB", "GB", "TB")
         val digitGroups = (Math.log10(size.toDouble()) / Math.log10(1024.0)).toInt()
-        return String.format(Locale.US, "%.2f %s", size / Math.pow(1024.0, digitGroups.toDouble()), units[digitGroups])
+        return String.format(
+            Locale.US,
+            "%.2f %s",
+            size / Math.pow(1024.0, digitGroups.toDouble()),
+            units[digitGroups]
+        )
     }
 }

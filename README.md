@@ -81,7 +81,7 @@ repositories {
 
 ```kotlin
 dependencies {
-    implementation("top.zibin:luban:2.0.0")
+    implementation("top.zibin:luban:2.0.1")
 }
 ```
 
@@ -89,7 +89,7 @@ dependencies {
 
 ```groovy
 dependencies {
-    implementation 'top.zibin:luban:2.0.0'
+    implementation 'top.zibin:luban:2.0.1'
 }
 ```
 
@@ -99,119 +99,109 @@ dependencies {
 
 ### ⚡ Kotlin (Coroutines)
 
-在 Kotlin 中，推荐使用 `suspend` 函数进行调用，代码更简洁。
+Luban 提供了三种 Kotlin 调用方式，从最符合 Kotlin 习惯到传统方式：
 
-#### 压缩单张图片
+#### 1. DSL 风格（推荐）
 
-```kotlin
-lifecycleScope.launch {
-    val inputUri: Uri = ... // 图片 Uri
-    val outputDir = context.cacheDir
-    
-    Luban.compress(context, inputUri, outputDir)
-        .onSuccess { file ->
-            // 压缩成功，file 为压缩后的图片文件
-            Log.d("Luban", "Compressed: ${file.absolutePath}")
-        }
-        .onFailure { error ->
-            // 处理错误
-            Log.e("Luban", "Error: ${error.message}")
-        }
-}
-```
-
-#### 压缩单张图片文件
+最符合 Kotlin 习惯的方式是使用 DSL API：
 
 ```kotlin
 lifecycleScope.launch {
-    val inputFile: File = ... 
-    val outputDir = context.cacheDir
-    
-    Luban.compress(inputFile, outputDir)
-        .onSuccess { file ->
-            Log.d("Luban", "Compressed: ${file.absolutePath}")
-        }
-        .onFailure { error ->
-            Log.e("Luban", "Error: ${error.message}")
-        }
-}
-```
-
-#### 压缩到指定文件路径
-
-```kotlin
-lifecycleScope.launch {
-    val inputFile: File = ...
-    val outputFile = File(context.cacheDir, "custom_output.jpg")
-    
-    Luban.compressToFile(inputFile, outputFile)
-        .onSuccess { file ->
-            Log.d("Luban", "Compressed to: ${file.absolutePath}")
-        }
-        .onFailure { error ->
-            Log.e("Luban", "Error: ${error.message}")
-        }
-}
-```
-
-#### 并发压缩多张图片
-
-```kotlin
-lifecycleScope.launch {
-    val uris: List<Uri> = ... 
-    val outputDir = context.cacheDir
-
-    val results = Luban.compress(context, uris, outputDir)
+    val results = luban(context) {
+        outputDir = File(context.cacheDir, "compressed")
+        
+        compress(imageUri1)
+        compress(imageUri2)
+        compress(imageFile1)
+        compress(listOf(imageFile2, imageFile3))
+        compress(listOf(imageUri3, imageUri4))
+    }
     
     results.forEach { result ->
-        result.onSuccess { file -> 
-            Log.d("Luban", "Compressed: ${file.absolutePath}")
-        }
-        .onFailure { error ->
-            Log.e("Luban", "Error: ${error.message}")
+        result.getOrNull()?.let { file ->
+            Log.d("Luban", "压缩成功: ${file.absolutePath}")
+        } ?: run {
+            val error = result.exceptionOrNull()
+            Log.e("Luban", "压缩失败: ${error?.message}")
         }
     }
 }
 ```
 
-#### 并发压缩多个文件
+**注意：** 
+- 对于 `Uri` 类型的压缩，如果不指定 `outputDir`，默认使用 `context.cacheDir`。对于 `File` 类型的压缩，必须显式设置 `outputDir`。
+- DSL 配置是声明式的，配置顺序不影响结果。你可以先设置 `outputDir` 再调用 `compress()`，也可以先调用 `compress()` 再设置 `outputDir`。
+
+#### 2. 扩展函数
+
+你也可以使用扩展函数，获得更流畅的 API：
 
 ```kotlin
 lifecycleScope.launch {
-    val files: List<File> = ...
-    val outputDir = context.cacheDir
-
-    val results = Luban.compress(files, outputDir)
+    val result = imageUri.compressTo(context)
     
-    results.forEach { result ->
-        result.onSuccess { file -> 
-            Log.d("Luban", "Compressed: ${file.absolutePath}")
-        }
-        .onFailure { error ->
-            Log.e("Luban", "Error: ${error.message}")
-        }
+    result.getOrElse { error ->
+        Log.e("Luban", "压缩失败: ${error.message}")
+        return@launch
+    }.let { file ->
+        Log.d("Luban", "压缩成功: ${file.absolutePath}")
     }
 }
 ```
 
-#### 在其他协程作用域中使用
+**压缩单个文件：**
+```kotlin
+val result = inputFile.compressTo(outputDir)
+```
 
-如果不在 Activity/Fragment 中使用，可以使用 `CoroutineScope`：
+**压缩到指定文件：**
+```kotlin
+val result = inputFile.compressToFile(outputFile)
+```
 
+**批量压缩：**
+```kotlin
+val results = fileList.compressTo(outputDir)
+val results = uriList.compressTo(context)
+```
+
+#### 3. 传统静态方法
+
+使用传统静态方法：
+
+```kotlin
+lifecycleScope.launch {
+    val result = Luban.compress(context, inputUri, outputDir)
+    
+    result.getOrElse { error ->
+        Log.e("Luban", "压缩失败: ${error.message}")
+        return@launch
+    }.let { file ->
+        Log.d("Luban", "压缩成功: ${file.absolutePath}")
+    }
+}
+```
+
+**可用方法：**
+- `Luban.compress(context, input: Uri, outputDir: File = context.cacheDir): Result<File>`
+- `Luban.compress(input: File, outputDir: File): Result<File>`
+- `Luban.compressToFile(input: File, output: File): Result<File>`
+- `Luban.compress(context, inputs: List<Uri>, outputDir: File = context.cacheDir): List<Result<File>>`
+- `Luban.compress(inputs: List<File>, outputDir: File): List<Result<File>>`
+
+**在其他协程作用域中使用：**
 ```kotlin
 val scope = CoroutineScope(Dispatchers.Main + SupervisorJob())
 
 scope.launch {
-    val inputUri: Uri = ...
-    val outputDir = context.cacheDir
+    val result = Luban.compress(context, inputUri)
     
-    Luban.compress(context, inputUri, outputDir)
-        .onSuccess { file ->
-            // 处理成功
-        }
-        .onFailure { error ->
-            // 处理错误
-        }
+    result.getOrElse { error ->
+        // 处理错误
+        return@launch
+    }.let { file ->
+        // 处理成功
+    }
 }
 ```
 

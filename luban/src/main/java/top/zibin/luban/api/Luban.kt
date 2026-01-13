@@ -72,13 +72,14 @@ class Luban @JvmOverloads constructor(
          * @param input 需要压缩的图片 Uri。
          * The image Uri to compress.
          *
-         * @param outputDir 压缩后图片的输出目录。
-         * The directory where the compressed image will be saved.
+         * @param outputDir 压缩后图片的输出目录，默认为 context.cacheDir。
+         * The directory where the compressed image will be saved, defaults to context.cacheDir.
          *
          * @return 包含压缩后 [File] 或异常信息的 [Result]。
          * A [Result] containing the compressed [File] or the exception if failed.
          */
-        suspend fun compress(context: Context, input: Uri, outputDir: File): Result<File> {
+        @JvmOverloads
+        suspend fun compress(context: Context, input: Uri, outputDir: File = context.cacheDir): Result<File> {
             return defaultInstance.compress(context, input, outputDir)
         }
 
@@ -129,13 +130,14 @@ class Luban @JvmOverloads constructor(
          * @param inputs 需要压缩的 Uri 列表。
          * The list of image Uris to compress.
          *
-         * @param outputDir 压缩后图片的输出目录。
-         * The directory where the compressed images will be saved.
+         * @param outputDir 压缩后图片的输出目录，默认为 context.cacheDir。
+         * The directory where the compressed images will be saved, defaults to context.cacheDir.
          *
          * @return [Result] 列表，每个元素包含压缩后 [File] 或异常信息。
          * A list of [Result]s, each containing the compressed [File] or exception.
          */
-        suspend fun compress(context: Context, inputs: List<Uri>, outputDir: File): List<Result<File>> {
+        @JvmOverloads
+        suspend fun compress(context: Context, inputs: List<Uri>, outputDir: File = context.cacheDir): List<Result<File>> {
             return defaultInstance.compress(context, inputs, outputDir)
         }
 
@@ -335,4 +337,93 @@ class Luban @JvmOverloads constructor(
         val timestamp = System.currentTimeMillis()
         return File(outputDir, "${nameWithoutExt}_${timestamp}.jpg")
     }
+}
+
+suspend fun File.compressTo(outputDir: File): Result<File> {
+    return Luban.compress(this, outputDir)
+}
+
+suspend fun File.compressToFile(output: File): Result<File> {
+    return Luban.compressToFile(this, output)
+}
+
+suspend fun Uri.compressTo(context: Context, outputDir: File = context.cacheDir): Result<File> {
+    return Luban.compress(context, this, outputDir)
+}
+
+suspend fun List<File>.compressTo(outputDir: File): List<Result<File>> {
+    return Luban.compress(this, outputDir)
+}
+
+suspend fun List<Uri>.compressTo(context: Context, outputDir: File = context.cacheDir): List<Result<File>> {
+    return Luban.compress(context, this, outputDir)
+}
+
+class LubanDsl internal constructor(private val context: Context?) {
+    var outputDir: File? = null
+    private val tasks = mutableListOf<suspend () -> Result<File>>()
+    private val batchTasks = mutableListOf<suspend () -> List<Result<File>>>()
+
+    fun compress(input: File): LubanDsl {
+        tasks.add {
+            val currentDir = this@LubanDsl.outputDir
+            if (currentDir != null) {
+                Luban.compress(input, currentDir)
+            } else {
+                Result.failure(IllegalStateException("Output directory is not set"))
+            }
+        }
+        return this
+    }
+
+    fun compress(input: Uri): LubanDsl {
+        val ctx = context ?: throw IllegalStateException("Context is required for Uri compression")
+        tasks.add {
+            val currentDir = this@LubanDsl.outputDir ?: ctx.cacheDir
+            Luban.compress(ctx, input, currentDir)
+        }
+        return this
+    }
+
+    @JvmName("compressFiles")
+    fun compress(inputs: List<File>): LubanDsl {
+        batchTasks.add {
+            val currentDir = this@LubanDsl.outputDir
+            if (currentDir != null) {
+                Luban.compress(inputs, currentDir)
+            } else {
+                inputs.map { Result.failure<File>(IllegalStateException("Output directory is not set")) }
+            }
+        }
+        return this
+    }
+
+    @JvmName("compressUris")
+    fun compress(inputs: List<Uri>): LubanDsl {
+        val ctx = context ?: throw IllegalStateException("Context is required for Uri compression")
+        batchTasks.add {
+            val currentDir = this@LubanDsl.outputDir ?: ctx.cacheDir
+            Luban.compress(ctx, inputs, currentDir)
+        }
+        return this
+    }
+
+    suspend fun execute(): List<Result<File>> {
+        val results = mutableListOf<Result<File>>()
+        tasks.forEach { task ->
+            results.add(task())
+        }
+        batchTasks.forEach { batchTask ->
+            results.addAll(batchTask())
+        }
+        return results
+    }
+}
+
+suspend fun luban(context: Context, block: LubanDsl.() -> Unit): List<Result<File>> {
+    return LubanDsl(context).apply(block).execute()
+}
+
+suspend fun luban(block: LubanDsl.() -> Unit): List<Result<File>> {
+    return LubanDsl(null).apply(block).execute()
 }
