@@ -30,6 +30,8 @@ Luban 2（鲁班 2） —— 高效简洁的 Android 图片压缩工具库，像
 
 本库是 `Luban` 的 **Kotlin 重构版本**，在升级核心算法的同时，利用 **Kotlin Coroutines** 和 **TurboJPEG** 进行了深度优化。新算法比原算法更加健壮和高效，提供更高效的异步处理和更优质的压缩效果。
 
+> 如果你需要**在线或命令行**的图片压缩（PNG / JPEG / GIF / WebP / AVIF，免费，网页 / API / CLI 共用一份额度），可以看看同一系列的 **LubanPNG（鲁班刨）**：https://lubanpng.wizthink.cn/?utm_source=luban2&utm_medium=readme&utm_campaign=launch
+
 # 📊 效果与对比
 
 | 图片类型 | 原图（分辨率, 大小） | Luban（分辨率, 大小） | Wechat（分辨率, 大小） |
