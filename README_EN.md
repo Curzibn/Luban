@@ -30,6 +30,8 @@ Since this behavior is inferred from observation, the results may not match WeCh
 
 This library is the **Kotlin refactored version** of `Luban`. While upgrading the core algorithm, it is optimized with **Kotlin Coroutines** and **TurboJPEG** for faster processing and better output quality. The new algorithm is more robust and efficient than the original, providing more efficient asynchronous processing and superior compression quality.
 
+> If you need **online or command line** image compression (PNG / JPEG / GIF / WebP / AVIF, free, one shared quota across web / API / CLI), take a look at **LubanPNG** from the same family: https://lubanpng.wizthink.cn/en/?utm_source=luban2&utm_medium=readme-en&utm_campaign=launch
+
 # 📊 Effects & Comparison
 
 | Image Type | Original | Luban | WeChat |
