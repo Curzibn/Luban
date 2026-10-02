@@ -26,7 +26,7 @@ jobs:
             --arg body "$(jq -r '(.issue.body // "")[:6000]' "$GITHUB_EVENT_PATH")" \
             --arg user "$(jq -r '.issue.user.login' "$GITHUB_EVENT_PATH")" \
             --arg url "$(jq -r '.issue.html_url' "$GITHUB_EVENT_PATH")" \
-            '{intake:"github-issues", conversation_key:$ck, resolution:"resume", project_slug:$project, initiator:("github:"+$user), text:("[GitHub Issue 监控] " + $repo + " 新增 issue #" + $num + "\n标题：" + $title + "\n作者：" + $user + "\n链接：" + $url + "\n\n正文：\n" + $body + "\n\n---\n值守契约：你是鲁班系开源项目的值守员工。请分析该 issue 的内容与类别（使用咨询/bug 报告/功能请求），结合仓库代码与 README 给出判断与建议动作。本环节只做分析与呈报：不要对外回复 issue、不要修改仓库代码。完成后用 deepblue_call_boss 建 normal 联络单告知梓斌：issue 摘要、分类判断、建议动作与待拍板选项。")}')
+            '{intake:"github-issues", conversation_key:$ck, resolution:"resume", project_slug:$project, initiator:("github:"+$user), text:("[GitHub Issue 监控] " + $repo + " 新增 issue #" + $num + "\n标题：" + $title + "\n作者：" + $user + "\n链接：" + $url + "\n\n正文：\n" + $body + "\n\n---\n值守契约：只做只读分析与呈报——不要对外回复 issue、不要修改仓库代码；分析结论写在最终回复里，平台会自动通知。")}')
           curl -fsS -X POST "https://deepblue.wizthink.cn/v1/intake" \
             -H "Authorization: Bearer ${INTAKE_TOKEN}" \
             -H "Content-Type: application/json" \
