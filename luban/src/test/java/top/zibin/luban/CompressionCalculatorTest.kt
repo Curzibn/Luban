@@ -1,6 +1,9 @@
 package top.zibin.luban
 
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
+import org.junit.Assert.assertNotNull
+import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Test
 import top.zibin.luban.algorithm.CompressionCalculator
@@ -38,6 +41,38 @@ class CompressionCalculatorTest {
         val target = calculator.calculateTarget(width, height)
 
         assertTrue("Should be identified as long image", target.isLongImage)
+    }
+
+    @Test
+    fun `full-screen photo ratio 0 point 45 is not a long image`() {
+        val target = calculator.calculateTarget(1080, 2400)
+
+        assertFalse("9:20 photo should not be treated as long image", target.isLongImage)
+        assertNull(target.targetSizeKb)
+    }
+
+    @Test
+    fun `eighteen by nine photo ratio 0 point 5 is not a long image`() {
+        val target = calculator.calculateTarget(1080, 2160)
+
+        assertFalse("18:9 photo should not be treated as long image", target.isLongImage)
+        assertNull(target.targetSizeKb)
+    }
+
+    @Test
+    fun `ratio 0 point 4 boundary is still a long image`() {
+        val target = calculator.calculateTarget(1000, 2500)
+
+        assertTrue("Ratio 0.4 should still be treated as long image", target.isLongImage)
+        assertNotNull(target.targetSizeKb)
+    }
+
+    @Test
+    fun `real long screenshot ratio 0 point 25 is a long image`() {
+        val target = calculator.calculateTarget(1000, 4000)
+
+        assertTrue(target.isLongImage)
+        assertNotNull(target.targetSizeKb)
     }
 
     @Test

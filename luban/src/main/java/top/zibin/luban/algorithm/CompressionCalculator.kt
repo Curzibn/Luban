@@ -86,7 +86,7 @@ class CompressionCalculator {
             estimatedSize = maxOf(estimatedSize, 250)
         }
 
-        val isLongImage = ratio <= 0.5
+        val isLongImage = ratio <= 0.4
         val targetSizeKb = if (isLongImage) estimatedSize else null
 
         return CompressionTarget(
