@@ -6,7 +6,7 @@ plugins {
     alias(libs.plugins.maven.publish)
 }
 
-val libraryVersion = "2.0.2"
+val libraryVersion = "2.0.3"
 
 android {
     namespace = "top.zibin.luban"

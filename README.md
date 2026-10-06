@@ -83,7 +83,7 @@ repositories {
 
 ```kotlin
 dependencies {
-    implementation("top.zibin:luban:2.0.2")
+    implementation("top.zibin:luban:2.0.3")
 }
 ```
 
@@ -91,7 +91,7 @@ dependencies {
 
 ```groovy
 dependencies {
-    implementation 'top.zibin:luban:2.0.2'
+    implementation 'top.zibin:luban:2.0.3'
 }
 ```
 

@@ -75,7 +75,7 @@ Add the dependency to your module's `build.gradle.kts` file:
 
 ```kotlin
 dependencies {
-    implementation("top.zibin:luban:2.0.2")
+    implementation("top.zibin:luban:2.0.3")
 }
 ```
 
