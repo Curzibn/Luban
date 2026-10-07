@@ -8,6 +8,8 @@
 
 Luban 2（鲁班 2） —— 高效简洁的 Android 图片压缩工具库，像素级还原微信朋友圈压缩策略。
 
+> 如果你需要**在线或命令行**的图片压缩（PNG / JPEG / GIF / WebP / AVIF，免费，网页 / API / CLI 共用一份额度），可以看看同一系列的 **LubanPNG（鲁班刨）**：https://lubanpng.wizthink.cn/?utm_source=luban2&utm_medium=readme&utm_campaign=launch
+
 ## 📑 目录
 
 - [📖 项目描述](#-项目描述)
@@ -29,8 +31,6 @@ Luban 2（鲁班 2） —— 高效简洁的 Android 图片压缩工具库，像
 因为是逆向推算，效果还没法跟微信一模一样，但是已经很接近微信朋友圈压缩后的效果，具体看以下对比！
 
 本库是 `Luban` 的 **Kotlin 重构版本**，在升级核心算法的同时，利用 **Kotlin Coroutines** 和 **TurboJPEG** 进行了深度优化。新算法比原算法更加健壮和高效，提供更高效的异步处理和更优质的压缩效果。
-
-> 如果你需要**在线或命令行**的图片压缩（PNG / JPEG / GIF / WebP / AVIF，免费，网页 / API / CLI 共用一份额度），可以看看同一系列的 **LubanPNG（鲁班刨）**：https://lubanpng.wizthink.cn/?utm_source=luban2&utm_medium=readme&utm_campaign=launch
 
 # 📊 效果与对比
 
