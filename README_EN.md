@@ -64,7 +64,7 @@ This library uses an **Adaptive Unified Image Compression** algorithm that dynam
 ### Robustness Guarantees
 
 - **Inflation Fallback**: Automatically returns the original image if compressed size exceeds original, avoiding making files larger after compression
-- **Smart Format Passthrough**: Preserves transparency for small PNG files, and converts large PNG files to JPEG when appropriate
+- **PNG and transparency**: Compression normally encodes JPEG. For `File` inputs, the original is copied only when the JPEG result is no smaller than the source; `Uri` inputs always return JPEG. PNG transparency is therefore not guaranteed to be preserved.
 - **Input Defense**: Safely handles extreme resolution inputs (0, negative, 1px, etc.), preventing crashes
 
 # 📦 Import
